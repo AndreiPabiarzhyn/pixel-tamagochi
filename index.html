@@ -108,24 +108,23 @@ body::before {
 .bar-fill.low  { background: #f87171 !important; }
 .bar-fill.high { background: #f87171 !important; }
 
-/* ── Lang bar ────────────────────────────── */
+/* ── Lang bar (same as prompt-builder) ────── */
 .lang-bar {
-  display: flex; gap: 4px;
-  margin-bottom: 14px;
+  position: sticky; top: env(safe-area-inset-top,0px); z-index: 100;
+  background: rgba(4,8,23,.75); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
 }
-.lang-btn {
-  flex: 1; padding: 6px 0;
-  background: var(--surface); border: 1.5px solid var(--border);
-  border-radius: 10px; font-family: 'Nunito', sans-serif;
-  font-size: .78rem; font-weight: 900; color: var(--muted);
-  cursor: pointer; transition: color .2s, border-color .2s, background .2s;
-  letter-spacing: .5px;
+.lb {
+  padding: 4px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: none;
+  color: var(--muted); font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: .18s; letter-spacing: .03em;
 }
-.lang-btn:hover { color: var(--text); border-color: #4a6080; }
-.lang-btn.active {
-  background: var(--border); color: var(--text);
-  border-color: #34d399; color: #34d399;
-}
+.lb:hover { border-color: #818cf8; color: #818cf8; }
+.lb.on { background: #34d399; border-color: #34d399; color: #fff; }
 
 /* ── Coins ───────────────────────────────── */
 .coins-badge {
@@ -288,13 +287,9 @@ body::before {
 </head>
 <body>
 
-<div class="card" id="card">
-  <!-- Language bar -->
-  <div class="lang-bar">
-    <button class="lang-btn active" id="lang-en" onclick="setLang('en')">EN</button>
-    <button class="lang-btn"        id="lang-ru" onclick="setLang('ru')">RU</button>
-  </div>
+<div class="lang-bar" id="langBar"></div>
 
+<div class="card" id="card">
   <div class="header">
     <div class="pet-name">Зубрик</div>
     <div style="display:flex;gap:6px;align-items:center;">
@@ -528,86 +523,127 @@ var ACTIONS = {
 };
 
 var PHRASES = {
-  en: {
-    happy: [
-      "Let's go again! I can do this! 🏃",
-      "Best day ever! Wanna play? 🎾",
-      "I want to bounce all the way to the stars! ✨",
-      "You're my favourite! 🐾",
-      "My tail is wagging by itself!"
-    ],
-    hungry: [
-      "My tummy says 'grrr'... 🍕",
-      "Looking at you with hungry eyes...",
-      "Just one little bite, please! 🥺",
-      "I'M SO HUNGRY!! RIGHT NOW!!",
-      "Mmm... what's that smell? Give it! 😮"
-    ],
-    overfed: [
-      "Oop... tummy's about to pop... 🤢",
-      "No more. Please. Stop.",
-      "I can't move anymore... 😵",
-      "Why are you feeding me so much?! 😤",
-      "Hic... hic... *hic* 🫧"
-    ],
-    sleep: [
-      "Zzz... so cozy here... warm... Zzz",
-      "Don't wake me... I'm almost on another planet...",
-      "Dreaming of a ball... Zzz 💤",
-      "Just five more minutes... Zzz",
-      "Sleep is the best friend... Zzz 💤"
-    ]
+  EN: {
+    happy:   ["Let's go again! I can do this! 🏃","Best day ever! Wanna play? 🎾","I want to bounce all the way to the stars! ✨","You're my favourite! 🐾","My tail is wagging by itself!"],
+    hungry:  ["My tummy says 'grrr'... 🍕","Looking at you with hungry eyes...","Just one little bite, please! 🥺","I'M SO HUNGRY!! RIGHT NOW!!","Mmm... what's that smell? Give it! 😮"],
+    overfed: ["Oop... tummy's about to pop... 🤢","No more. Please. Stop.","I can't move anymore... 😵","Why are you feeding me so much?! 😤","Hic... hic... *hic* 🫧"],
+    sleep:   ["Zzz... so cozy here... warm... Zzz","Don't wake me... I'm almost on another planet...","Dreaming of a ball... Zzz 💤","Just five more minutes... Zzz","Sleep is the best friend... Zzz 💤"]
   },
-  ru: {
-    happy: [
-      'Побежали ещё раз! Я могу! 🏃',
-      'Это лучший день! Играем? 🎾',
-      'Хочу прыгать до звёзд! ✨',
-      'Ты мой самый лучший! 🐾',
-      'Хвостик сам крутится от радости!'
-    ],
-    hungry: [
-      'Живот говорит «бурр-р-р»... 🍕',
-      'Смотрю голодными глазами...',
-      'Дай хоть кусочек, пожалуйста! 🥺',
-      'Есть хочу!! Очень!! Срочно!!',
-      'Ммм... чем пахнет? Дай мне! 😮'
-    ],
-    overfed: [
-      'Уп-с... живот лопается... 🤢',
-      'Больше не надо. Пожалуйста. Стоп.',
-      'Я больше не могу двигаться... 😵',
-      'Зачем ты меня так кормишь?! 😤',
-      'Икаю... икаю... *ик* 🫧'
-    ],
-    sleep: [
-      'Zzz... хорошо тут... тепло... Zzz',
-      'Не буди... я почти на другой планете...',
-      'Снится мячик... Zzz 💤',
-      'Только ещё пять минут... Zzz',
-      'Сон — лучший друг... Zzz 💤'
-    ]
+  RU: {
+    happy:   ['Побежали ещё раз! Я могу! 🏃','Это лучший день! Играем? 🎾','Хочу прыгать до звёзд! ✨','Ты мой самый лучший! 🐾','Хвостик сам крутится от радости!'],
+    hungry:  ['Живот говорит «бурр-р-р»... 🍕','Смотрю голодными глазами...','Дай хоть кусочек, пожалуйста! 🥺','Есть хочу!! Очень!! Срочно!!','Ммм... чем пахнет? Дай мне! 😮'],
+    overfed: ['Уп-с... живот лопается... 🤢','Больше не надо. Пожалуйста. Стоп.','Я больше не могу двигаться... 😵','Зачем ты меня так кормишь?! 😤','Икаю... икаю... *ик* 🫧'],
+    sleep:   ['Zzz... хорошо тут... тепло... Zzz','Не буди... я почти на другой планете...','Снится мячик... Zzz 💤','Только ещё пять минут... Zzz','Сон — лучший друг... Zzz 💤']
+  },
+  ES: {
+    happy:   ['¡Vamos de nuevo! ¡Puedo hacerlo! 🏃','¡El mejor día! ¿Jugamos? 🎾','¡Quiero saltar hasta las estrellas! ✨','¡Eres mi favorito! 🐾','¡Mi cola se mueve sola de alegría!'],
+    hungry:  ['Mi barriga dice «grrr»... 🍕','Te miro con ojos hambrientos...','¡Solo un bocadito, por favor! 🥺','¡TENGO MUCHA HAMBRE!! ¡AHORA!!','Mmm... ¿qué huele tan bien? ¡Dámelo! 😮'],
+    overfed: ['Ups... la barriga va a explotar... 🤢','Ya no más. Por favor. Para.','Ya no puedo moverme... 😵','¿Por qué me das tanto de comer?! 😤','Hip... hip... *hip* 🫧'],
+    sleep:   ['Zzz... qué acogedor... calientito... Zzz','No me despiertes... casi en otro planeta...','Soñando con una pelota... Zzz 💤','Cinco minutos más... Zzz','El sueño es el mejor amigo... Zzz 💤']
+  },
+  ID: {
+    happy:   ['Ayo lagi! Aku bisa! 🏃','Hari terbaik! Mau main? 🎾','Mau melompat sampai bintang! ✨','Kamu yang terbaik! 🐾','Ekorku bergerak sendiri!'],
+    hungry:  ['Perutku bilang "grrr"... 🍕','Melirikmu dengan mata lapar...','Sedikit saja, tolong! 🥺','LAPAR SEKALI!! SEKARANG!!','Hmm... bau apa itu? Beri aku! 😮'],
+    overfed: ['Aduh... perut mau meletus... 🤢','Tidak lagi. Tolong. Berhenti.','Aku tidak bisa bergerak... 😵','Kenapa dikasih makan sebanyak itu?! 😤','Hik... hik... *hik* 🫧'],
+    sleep:   ['Zzz... nyaman sekali... hangat... Zzz','Jangan bangunkan... hampir ke planet lain...','Mimpi bola... Zzz 💤','Lima menit lagi... Zzz','Tidur adalah sahabat terbaik... Zzz 💤']
+  },
+  IT: {
+    happy:   ['Andiamo ancora! Ce la faccio! 🏃','Il giorno migliore! Giochiamo? 🎾','Voglio saltare fino alle stelle! ✨','Sei il mio preferito! 🐾','La coda si muove da sola!'],
+    hungry:  ['La mia pancia dice "grrr"... 🍕','Ti guardo con occhi affamati...','Solo un morso, per favore! 🥺','HO TANTISSIMA FAME!! ADESSO!!','Mmm... cosa profuma così bene? Dammelo! 😮'],
+    overfed: ['Ops... la pancia sta per scoppiare... 🤢','Basta. Per favore. Stop.','Non riesco più a muovermi... 😵','Perché mi dai da mangiare così tanto?! 😤','Singhiozzo... singhiozzo... 🫧'],
+    sleep:   ['Zzz... che accogliente... caldo... Zzz','Non svegliarmi... sono quasi su un altro pianeta...','Sogno una palla... Zzz 💤','Ancora cinque minuti... Zzz','Il sonno è il migliore amico... Zzz 💤']
+  },
+  TR: {
+    happy:   ['Hadi tekrar! Yapabilirim! 🏃','En güzel gün! Oynayalım mı? 🎾','Yıldızlara kadar zıplamak istiyorum! ✨','Sen benim favorimsin! 🐾','Kuyruğum kendiliğinden sallıyor!'],
+    hungry:  ['Karnım "grrr" diyor... 🍕','Seni aç gözlerle izliyorum...','Sadece bir ısırık, lütfen! 🥺','ÇOK AÇIM!! HEMEN!!','Mmm... ne kokuyor? Ver bana! 😮'],
+    overfed: ['Yavaş... karnım patlıyor... 🤢','Artık yok. Lütfen. Dur.','Artık hareket edemiyorum... 😵','Neden bu kadar çok besliyorsun beni?! 😤','Hıç... hıç... *hıç* 🫧'],
+    sleep:   ['Zzz... burası çok rahat... sıcak... Zzz','Uyandırma... neredeyse başka bir gezegende...','Top rüyası görüyorum... Zzz 💤','Sadece beş dakika daha... Zzz','Uyku en iyi arkadaş... Zzz 💤']
+  },
+  PL: {
+    happy:   ['Jeszcze raz! Dam radę! 🏃','Najlepszy dzień! Gramy? 🎾','Chcę skakać aż do gwiazd! ✨','Jesteś moim ulubionym! 🐾','Ogonek kręci się sam z radości!'],
+    hungry:  ['Brzuszek mówi "grrr"... 🍕','Patrzę na ciebie głodnymi oczami...','Tylko jeden kęsek, proszę! 🥺','JESTEM GŁODNY!! TERAZ!!','Mmm... co tak pachnie? Daj mi! 😮'],
+    overfed: ['Oj... brzuszek zaraz pęknie... 🤢','Już nie. Proszę. Stop.','Nie mogę się ruszyć... 😵','Dlaczego mnie tak karmisz?! 😤','Czkawka... czkawka... *czkawka* 🫧'],
+    sleep:   ['Zzz... tak przytulnie... ciepło... Zzz','Nie budź mnie... prawie na innej planecie...','Śnię o piłce... Zzz 💤','Jeszcze pięć minut... Zzz','Sen to najlepszy przyjaciel... Zzz 💤']
+  },
+  PT: {
+    happy:   ['Vamos de novo! Consigo! 🏃','O melhor dia! Vamos jogar? 🎾','Quero saltar até às estrelas! ✨','És o meu favorito! 🐾','O meu rabo abana sozinho!'],
+    hungry:  ['A minha barriga diz "grrr"... 🍕','Olho para ti com olhos famintos...','Só um bocadinho, por favor! 🥺','TENHO MUITA FOME!! AGORA!!','Mmm... o que cheira tão bem? Dá-me! 😮'],
+    overfed: ['Ops... a barriga vai rebentar... 🤢','Chega. Por favor. Para.','Já não me consigo mexer... 😵','Porquê me dás tanto de comer?! 😤','Soluço... soluço... *soluço* 🫧'],
+    sleep:   ['Zzz... tão aconchegante... quente... Zzz','Não me acorde... estou quase noutro planeta...','A sonhar com uma bola... Zzz 💤','Mais cinco minutinhos... Zzz','O sono é o melhor amigo... Zzz 💤']
+  },
+  AR: {
+    happy:   ['هيا مجدداً! أستطيع! 🏃','أفضل يوم! نلعب؟ 🎾','أريد القفز حتى النجوم! ✨','أنت المفضل لديّ! 🐾','ذيلي يتحرك وحده من الفرح!'],
+    hungry:  ['بطني تقول «غررر»... 🍕','أنظر إليك بعيون جائعة...','فقط قضمة صغيرة، أرجوك! 🥺','أنا جائع جداً!! الآن!!','ممم... ما هذه الرائحة؟ أعطني! 😮'],
+    overfed: ['أوه... البطن على وشك الانفجار... 🤢','لا مزيد. من فضلك. توقف.','لا أستطيع التحرك... 😵','لماذا تطعمني كثيراً جداً؟! 😤','فواق... فواق... *فواق* 🫧'],
+    sleep:   ['zzz... ما أجمل هذا... دافئ... zzz','لا توقظني... أنا تقريباً في كوكب آخر...','أحلم بكرة... zzz 💤','خمس دقائق أخرى... zzz','النوم أفضل صديق... zzz 💤']
   }
 };
 
+var LANG_ORDER = ['EN','RU','ES','ID','IT','TR','PL','PT','AR'];
+
 var TRANS = {
-  en: {
-    statLabels:  { hunger:'Hunger', mood:'Mood', energy:'Energy' },
-    actionBtns:  { play:'🎾 Play', feed:'🍎 Feed', sleep:'🌙 Sleep' },
-    levelPrefix: 'Lv.',
-    shopToggle:  '🛍️ Accessory Shop',
-    shopNames:   { crown:'Crown', glasses:'Glasses', bow:'Bow' },
-    coinWord:    'coins',
-    buy: 'Buy', wear: 'Wear', remove: 'Remove ✓', owned: 'Owned', equipped: 'On'
+  EN: { dir:'ltr',
+    statLabels:  { hunger:'Hunger',  mood:'Mood',     energy:'Energy'  },
+    actionBtns:  { play:'🎾 Play',   feed:'🍎 Feed',  sleep:'🌙 Sleep' },
+    levelPrefix: 'Lv.', shopToggle:'🛍️ Accessory Shop',
+    shopNames:   { crown:'Crown',    glasses:'Glasses',  bow:'Bow'     },
+    coinWord:'coins', buy:'Buy', wear:'Wear', remove:'Remove ✓', owned:'Owned', equipped:'On'
   },
-  ru: {
-    statLabels:  { hunger:'Сытость', mood:'Радость', energy:'Энергия' },
-    actionBtns:  { play:'🎾 Поиграть', feed:'🍎 Покормить', sleep:'🌙 Спать' },
-    levelPrefix: 'Ур.',
-    shopToggle:  '🛍️ Магазин аксессуаров',
-    shopNames:   { crown:'Корона', glasses:'Очки', bow:'Бантик' },
-    coinWord:    'монет',
-    buy: 'Купить', wear: 'Надеть', remove: 'Снять ✓', owned: 'Куплено', equipped: 'Надето'
+  RU: { dir:'ltr',
+    statLabels:  { hunger:'Сытость', mood:'Радость',  energy:'Энергия' },
+    actionBtns:  { play:'🎾 Играть', feed:'🍎 Кормить', sleep:'🌙 Спать' },
+    levelPrefix: 'Ур.', shopToggle:'🛍️ Магазин аксессуаров',
+    shopNames:   { crown:'Корона',   glasses:'Очки',    bow:'Бантик'   },
+    coinWord:'монет', buy:'Купить', wear:'Надеть', remove:'Снять ✓', owned:'Куплено', equipped:'Надето'
+  },
+  ES: { dir:'ltr',
+    statLabels:  { hunger:'Hambre',  mood:'Humor',    energy:'Energía' },
+    actionBtns:  { play:'🎾 Jugar',  feed:'🍎 Alimentar', sleep:'🌙 Dormir' },
+    levelPrefix: 'Nv.', shopToggle:'🛍️ Tienda de Accesorios',
+    shopNames:   { crown:'Corona',   glasses:'Gafas',   bow:'Lazo'     },
+    coinWord:'monedas', buy:'Comprar', wear:'Usar', remove:'Quitar ✓', owned:'Tenido', equipped:'Puesto'
+  },
+  ID: { dir:'ltr',
+    statLabels:  { hunger:'Lapar',   mood:'Suasana',  energy:'Energi'  },
+    actionBtns:  { play:'🎾 Bermain', feed:'🍎 Makan', sleep:'🌙 Tidur' },
+    levelPrefix: 'Lv.', shopToggle:'🛍️ Toko Aksesori',
+    shopNames:   { crown:'Mahkota',  glasses:'Kacamata', bow:'Pita'    },
+    coinWord:'koin', buy:'Beli', wear:'Pakai', remove:'Lepas ✓', owned:'Dimiliki', equipped:'Dipakai'
+  },
+  IT: { dir:'ltr',
+    statLabels:  { hunger:'Fame',    mood:'Umore',    energy:'Energia' },
+    actionBtns:  { play:'🎾 Giocare', feed:'🍎 Nutrire', sleep:'🌙 Dormire' },
+    levelPrefix: 'Lv.', shopToggle:'🛍️ Negozio Accessori',
+    shopNames:   { crown:'Corona',   glasses:'Occhiali', bow:'Fiocco'  },
+    coinWord:'monete', buy:'Compra', wear:'Indossa', remove:'Rimuovi ✓', owned:'Acquistato', equipped:'Indossato'
+  },
+  TR: { dir:'ltr',
+    statLabels:  { hunger:'Açlık',   mood:'Mutluluk', energy:'Enerji'  },
+    actionBtns:  { play:'🎾 Oyna',   feed:'🍎 Besle', sleep:'🌙 Uyu'   },
+    levelPrefix: 'Sv.', shopToggle:'🛍️ Aksesuar Dükkanı',
+    shopNames:   { crown:'Taç',      glasses:'Gözlük',  bow:'Kurdele'  },
+    coinWord:'altın', buy:'Satın Al', wear:'Giy', remove:'Çıkar ✓', owned:'Alındı', equipped:'Giyili'
+  },
+  PL: { dir:'ltr',
+    statLabels:  { hunger:'Głód',    mood:'Nastrój',  energy:'Energia' },
+    actionBtns:  { play:'🎾 Graj',   feed:'🍎 Nakarm', sleep:'🌙 Śpij' },
+    levelPrefix: 'Poz.', shopToggle:'🛍️ Sklep Akcesoriów',
+    shopNames:   { crown:'Korona',   glasses:'Okulary', bow:'Kokarda'  },
+    coinWord:'monet', buy:'Kup', wear:'Załóż', remove:'Zdejmij ✓', owned:'Kupione', equipped:'Założone'
+  },
+  PT: { dir:'ltr',
+    statLabels:  { hunger:'Fome',    mood:'Humor',    energy:'Energia' },
+    actionBtns:  { play:'🎾 Jogar',  feed:'🍎 Alimentar', sleep:'🌙 Dormir' },
+    levelPrefix: 'Nv.', shopToggle:'🛍️ Loja de Acessórios',
+    shopNames:   { crown:'Coroa',    glasses:'Óculos',  bow:'Laço'     },
+    coinWord:'moedas', buy:'Comprar', wear:'Usar', remove:'Remover ✓', owned:'Comprado', equipped:'Usando'
+  },
+  AR: { dir:'rtl',
+    statLabels:  { hunger:'جوع',     mood:'مزاج',     energy:'طاقة'   },
+    actionBtns:  { play:'🎾 العب',   feed:'🍎 أطعم',  sleep:'🌙 نم'   },
+    levelPrefix: 'مس.', shopToggle:'🛍️ متجر الإكسسوارات',
+    shopNames:   { crown:'تاج',      glasses:'نظارات', bow:'ربطة'     },
+    coinWord:'عملة', buy:'اشترِ', wear:'ارتدِ', remove:'اخلع ✓', owned:'مشتري', equipped:'مرتدى'
   }
 };
 
@@ -621,7 +657,7 @@ var SHOP = {
 
 var ANIMS = { happy:'anim-bounce', hungry:'anim-shake', sleep:'anim-breathe' };
 
-var lang      = 'en';
+var lang      = 'EN';
 var stats     = { hunger:75, mood:65, energy:60 };
 var visState  = 'happy';
 var sleeping  = false;
@@ -776,9 +812,12 @@ function addXP(n) {
 function setLang(l) {
   lang = l;
   var t = T();
-  // lang buttons
-  document.getElementById('lang-en').classList.toggle('active', l === 'en');
-  document.getElementById('lang-ru').classList.toggle('active', l === 'ru');
+  // lang bar — re-render with active highlight
+  document.getElementById('langBar').innerHTML = LANG_ORDER.map(function(code) {
+    return '<button class="lb' + (code === l ? ' on' : '') + '" onclick="setLang(\'' + code + '\')">' + code + '</button>';
+  }).join('');
+  // RTL for Arabic
+  document.getElementById('card').setAttribute('dir', t.dir || 'ltr');
   // stat labels
   document.getElementById('lbl-hunger').textContent = t.statLabels.hunger;
   document.getElementById('lbl-mood').textContent   = t.statLabels.mood;
@@ -895,8 +934,7 @@ setInterval(function() {
   visState = startVis;
   setActiveBtn('play');
   renderStats();
-  say(startVis);
-  renderShop();
+  setLang('EN');
 })();
 </script>
 </body>
