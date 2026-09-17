@@ -392,7 +392,7 @@ function clamp(v){ return Math.max(0, Math.min(100, v)); }
 /* ── Derive visual state from stats ──────── */
 function computeVisState() {
   if (sleeping)          return 'sleep';
-  if (stats.hunger < 25) return 'hungry';
+  if (stats.hunger < 40) return 'hungry';
   return 'happy';
 }
 
@@ -419,7 +419,7 @@ function renderStats() {
     var val = document.getElementById('val-' + k);
     bar.style.width = v + '%';
     val.textContent = v;
-    bar.classList.toggle('low', v < 25);
+    bar.classList.toggle('low', v < 40);
   }
 }
 
