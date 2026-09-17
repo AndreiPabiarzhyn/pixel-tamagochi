@@ -107,6 +107,74 @@ body::before {
 .bar-energy { background: linear-gradient(90deg,#818cf8,#a5b4fc); }
 .bar-fill.low  { background: #f87171 !important; }
 .bar-fill.high { background: #f87171 !important; }
+
+/* ── Coins ───────────────────────────────── */
+.coins-badge {
+  background: var(--border); border-radius: 20px;
+  padding: 3px 10px; font-size: .75rem; font-weight: 700; color: #fbbf24;
+}
+
+/* ── Accessory overlay ───────────────────── */
+.acc-overlay {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 2;
+}
+
+/* ── Shop ────────────────────────────────── */
+.shop-toggle {
+  width: 100%; margin-top: 10px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 10px 16px;
+  font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 700;
+  color: var(--muted); cursor: pointer;
+  transition: color .2s, border-color .2s;
+  text-align: left;
+}
+.shop-toggle:hover { color: var(--text); border-color: #fbbf2466; }
+
+.shop-panel {
+  margin-top: 10px; display: none;
+  flex-direction: column; gap: 8px;
+}
+.shop-panel.open { display: flex; }
+
+.shop-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 9px 12px;
+  cursor: pointer; transition: border-color .2s, box-shadow .2s;
+}
+.shop-item:hover { border-color: #fbbf2466; box-shadow: 0 0 12px #fbbf2415; }
+.shop-item.owned { border-color: #fbbf2466; }
+.shop-item.equipped { border-color: #fbbf24; box-shadow: 0 0 16px #fbbf2430; }
+
+.shop-item-icon { width: 38px; height: 38px; flex-shrink: 0; }
+.shop-item-info { flex: 1; }
+.shop-item-name { font-size: .85rem; font-weight: 700; }
+.shop-item-price {
+  font-size: .75rem; color: #fbbf24; font-weight: 700; margin-top: 1px;
+}
+.shop-item-price.owned-label { color: var(--muted); }
+
+.shop-item-btn {
+  background: linear-gradient(135deg,#b45309,#fbbf24);
+  border: none; border-radius: 10px;
+  padding: 6px 12px; font-family:'Nunito',sans-serif;
+  font-size: .78rem; font-weight: 900; color: #1c0a00;
+  cursor: pointer; flex-shrink: 0;
+  transition: transform .1s, opacity .2s;
+}
+.shop-item-btn:hover   { transform: scale(1.05); }
+.shop-item-btn:active  { transform: scale(.97); }
+.shop-item-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+.shop-item-btn.equip-btn {
+  background: linear-gradient(135deg,#1c2e50,#34d399);
+  color: #fff;
+}
+.shop-item-btn.equipped-btn {
+  background: linear-gradient(135deg,#059669,#34d399);
+  color: #fff;
+}
 .stat-val { font-size:.7rem; color:var(--muted); width:26px; text-align:right; font-variant-numeric:tabular-nums; }
 
 /* ── Buttons ─────────────────────────────── */
@@ -204,7 +272,10 @@ body::before {
 <div class="card" id="card">
   <div class="header">
     <div class="pet-name">Зубрик</div>
-    <div class="level-badge" id="level-badge">Ур.&nbsp;1</div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <div class="coins-badge" id="coins-badge">💰 0</div>
+      <div class="level-badge" id="level-badge">Ур.&nbsp;1</div>
+    </div>
   </div>
 
   <div class="bubble" id="bubble">Привет! Я рад тебя видеть! 👋</div>
@@ -295,6 +366,35 @@ body::before {
       </svg>
     </div>
 
+    <!-- Accessory overlay — same viewBox as creatures -->
+    <svg class="acc-overlay" viewBox="-12 -12 104 120" xmlns="http://www.w3.org/2000/svg">
+      <!-- Crown -->
+      <g id="acc-crown" style="display:none">
+        <polygon points="22,2 27,-8 32,2" fill="#fbbf24"/>
+        <polygon points="32,2 40,-11 48,2" fill="#fbbf24"/>
+        <polygon points="48,2 53,-8 58,2" fill="#fbbf24"/>
+        <rect x="22" y="2" width="36" height="10" rx="2" fill="#f59e0b"/>
+        <circle cx="27" cy="5" r="2.5" fill="#f87171"/>
+        <circle cx="40" cy="4" r="2.5" fill="#34d399"/>
+        <circle cx="53" cy="5" r="2.5" fill="#818cf8"/>
+      </g>
+      <!-- Glasses -->
+      <g id="acc-glasses" style="display:none">
+        <circle cx="27" cy="50" r="11" fill="rgba(244,114,182,.15)" stroke="#f472b6" stroke-width="3"/>
+        <circle cx="53" cy="50" r="11" fill="rgba(244,114,182,.15)" stroke="#f472b6" stroke-width="3"/>
+        <line x1="38" y1="50" x2="42" y2="50" stroke="#f472b6" stroke-width="3"/>
+        <line x1="16" y1="47" x2="16" y2="50" stroke="#f472b6" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="64" y1="47" x2="64" y2="50" stroke="#f472b6" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <!-- Bow -->
+      <g id="acc-bow" style="display:none">
+        <ellipse cx="55" cy="7" rx="11" ry="6" fill="#c084fc" transform="rotate(-25,55,7)"/>
+        <ellipse cx="71" cy="2" rx="11" ry="6" fill="#c084fc" transform="rotate(25,71,2)"/>
+        <circle cx="63" cy="5" r="5" fill="#e879f9"/>
+        <circle cx="63" cy="5" r="2.5" fill="#f0abfc"/>
+      </g>
+    </svg>
+
   </div>
 
   <!-- Stat bars -->
@@ -324,6 +424,56 @@ body::before {
     <button class="btn btn-play  active" id="btn-play"  onclick="doAction('play', event)" >🎾 Поиграть</button>
     <button class="btn btn-feed"         id="btn-feed"  onclick="doAction('feed', event)" >🍎 Покормить</button>
     <button class="btn btn-sleep"        id="btn-sleep" onclick="doAction('sleep', event)">🌙 Уложить спать</button>
+  </div>
+
+  <!-- Shop -->
+  <button class="shop-toggle" onclick="toggleShop()">🛍️ Магазин аксессуаров</button>
+  <div class="shop-panel" id="shop-panel">
+
+    <div class="shop-item" id="si-crown">
+      <svg class="shop-item-icon" viewBox="0 0 38 30" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="4,28 9,8 19,20 29,8 34,28" fill="#f59e0b"/>
+        <rect x="4" y="22" width="30" height="8" rx="2" fill="#fbbf24"/>
+        <circle cx="9"  cy="26" r="3" fill="#f87171"/>
+        <circle cx="19" cy="25" r="3" fill="#34d399"/>
+        <circle cx="29" cy="26" r="3" fill="#818cf8"/>
+      </svg>
+      <div class="shop-item-info">
+        <div class="shop-item-name">Корона</div>
+        <div class="shop-item-price" id="price-crown">💰 25 монет</div>
+      </div>
+      <button class="shop-item-btn" id="btn-crown" onclick="shopAction('crown')">Купить</button>
+    </div>
+
+    <div class="shop-item" id="si-glasses">
+      <svg class="shop-item-icon" viewBox="0 0 38 20" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="8" fill="rgba(244,114,182,.2)" stroke="#f472b6" stroke-width="2.5"/>
+        <circle cx="28" cy="10" r="8" fill="rgba(244,114,182,.2)" stroke="#f472b6" stroke-width="2.5"/>
+        <line x1="18" y1="10" x2="20" y2="10" stroke="#f472b6" stroke-width="2.5"/>
+        <line x1="2"  y1="7"  x2="2"  y2="10" stroke="#f472b6" stroke-width="2"/>
+        <line x1="36" y1="7"  x2="36" y2="10" stroke="#f472b6" stroke-width="2"/>
+      </svg>
+      <div class="shop-item-info">
+        <div class="shop-item-name">Очки</div>
+        <div class="shop-item-price" id="price-glasses">💰 20 монет</div>
+      </div>
+      <button class="shop-item-btn" id="btn-glasses" onclick="shopAction('glasses')">Купить</button>
+    </div>
+
+    <div class="shop-item" id="si-bow">
+      <svg class="shop-item-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="10" cy="12" rx="9" ry="6" fill="#c084fc" transform="rotate(-20,10,12)"/>
+        <ellipse cx="28" cy="12" rx="9" ry="6" fill="#c084fc" transform="rotate(20,28,12)"/>
+        <circle cx="19" cy="12" r="5" fill="#e879f9"/>
+        <circle cx="19" cy="12" r="2.5" fill="#f0abfc"/>
+      </svg>
+      <div class="shop-item-info">
+        <div class="shop-item-name">Бантик</div>
+        <div class="shop-item-price" id="price-bow">💰 15 монет</div>
+      </div>
+      <button class="shop-item-btn" id="btn-bow" onclick="shopAction('bow')">Купить</button>
+    </div>
+
   </div>
 </div>
 
@@ -385,15 +535,24 @@ var PHRASES = {
 
 var FLOATS = { play:'🎾', feed:'🍎', sleep:'😴' };
 
+var SHOP = {
+  crown:   { cost:25, label:'Корона' },
+  glasses: { cost:20, label:'Очки'   },
+  bow:     { cost:15, label:'Бантик' }
+};
+
 var ANIMS = { happy:'anim-bounce', hungry:'anim-shake', sleep:'anim-breathe' };
 
 var stats     = { hunger:75, mood:65, energy:60 };
-var visState  = 'happy';   // current creature shown
-var sleeping  = false;     // is pet in forced sleep mode
-var lastBtn   = 'play';    // which button appears active
+var visState  = 'happy';
+var sleeping  = false;
+var lastBtn   = 'play';
 var xp        = 0;
 var level     = 1;
 var phraseIdx = { happy:0, hungry:0, sleep:0 };
+var coins     = 0;
+var owned     = { crown:false, glasses:false, bow:false };
+var equipped  = { crown:false, glasses:false, bow:false };
 
 function clamp(v){ return Math.max(0, Math.min(100, v)); }
 
@@ -456,6 +615,67 @@ function say(stateKey) {
   var idx  = phraseIdx[phraseKey] % list.length;
   phraseIdx[phraseKey]++;
   document.getElementById('bubble').textContent = list[idx];
+}
+
+/* ── Coins ───────────────────────────────── */
+function addCoins(n) {
+  coins += n;
+  document.getElementById('coins-badge').textContent = '💰 ' + coins;
+  renderShop();
+}
+
+/* ── Shop ────────────────────────────────── */
+function toggleShop() {
+  var panel = document.getElementById('shop-panel');
+  panel.classList.toggle('open');
+}
+
+function renderShop() {
+  var ids = ['crown','glasses','bow'];
+  for (var i = 0; i < ids.length; i++) {
+    var id  = ids[i];
+    var btn = document.getElementById('btn-' + id);
+    var si  = document.getElementById('si-' + id);
+    var pr  = document.getElementById('price-' + id);
+    if (!owned[id]) {
+      btn.textContent = 'Купить';
+      btn.className   = 'shop-item-btn';
+      btn.disabled    = coins < SHOP[id].cost;
+      pr.textContent  = '💰 ' + SHOP[id].cost + ' монет';
+      pr.className    = 'shop-item-price';
+      si.classList.remove('owned','equipped');
+    } else if (!equipped[id]) {
+      btn.textContent = 'Надеть';
+      btn.className   = 'shop-item-btn equip-btn';
+      btn.disabled    = false;
+      pr.textContent  = 'Куплено';
+      pr.className    = 'shop-item-price owned-label';
+      si.classList.add('owned');
+      si.classList.remove('equipped');
+    } else {
+      btn.textContent = 'Снять ✓';
+      btn.className   = 'shop-item-btn equipped-btn';
+      btn.disabled    = false;
+      pr.textContent  = 'Надето';
+      pr.className    = 'shop-item-price owned-label';
+      si.classList.add('owned','equipped');
+    }
+  }
+}
+
+function shopAction(id) {
+  if (!owned[id]) {
+    if (coins < SHOP[id].cost) return;
+    coins -= SHOP[id].cost;
+    owned[id]    = true;
+    equipped[id] = true;
+    document.getElementById('coins-badge').textContent = '💰 ' + coins;
+    floatEmoji('✨', document.getElementById('btn-' + id));
+  } else {
+    equipped[id] = !equipped[id];
+  }
+  document.getElementById('acc-' + id).style.display = equipped[id] ? '' : 'none';
+  renderShop();
 }
 
 /* ── Level ───────────────────────────────── */
@@ -524,6 +744,7 @@ function doAction(action, e) {
   renderStats();
   setActiveBtn(action);
   addXP(10);
+  addCoins(5);
 
   // Derive and switch visual state
   var newVis = computeVisState();
@@ -568,6 +789,7 @@ setInterval(function() {
   setActiveBtn('play');
   renderStats();
   say(startVis);
+  renderShop();
 })();
 </script>
 </body>
