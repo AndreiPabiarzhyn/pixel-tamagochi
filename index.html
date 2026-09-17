@@ -105,7 +105,8 @@ body::before {
 .bar-hunger { background: linear-gradient(90deg,#fb923c,#fbbf24); }
 .bar-mood   { background: linear-gradient(90deg,#34d399,#6ee7b7); }
 .bar-energy { background: linear-gradient(90deg,#818cf8,#a5b4fc); }
-.bar-fill.low { background: #f87171 !important; }
+.bar-fill.low  { background: #f87171 !important; }
+.bar-fill.high { background: #f87171 !important; }
 .stat-val { font-size:.7rem; color:var(--muted); width:26px; text-align:right; font-variant-numeric:tabular-nums; }
 
 /* ── Buttons ─────────────────────────────── */
@@ -366,6 +367,13 @@ var PHRASES = {
     'Есть хочу!! Очень!! Срочно!!',
     'Ммм... чем пахнет? Дай мне! 😮'
   ],
+  overfed: [
+    'Уп-с... живот лопается... 🤢',
+    'Больше не надо. Пожалуйста. Стоп.',
+    'Я больше не могу двигаться... 😵',
+    'Зачем ты меня так кормишь?! 😤',
+    'Икаю... икаю... *ик* 🫧'
+  ],
   sleep: [
     'Zzz... хорошо тут... тепло... Zzz',
     'Не буди... я почти на другой планете...',
@@ -391,9 +399,17 @@ function clamp(v){ return Math.max(0, Math.min(100, v)); }
 
 /* ── Derive visual state from stats ──────── */
 function computeVisState() {
-  if (sleeping)          return 'sleep';
-  if (stats.hunger < 40) return 'hungry';
+  if (sleeping)           return 'sleep';
+  if (stats.hunger < 40)  return 'hungry';  // too hungry
+  if (stats.hunger >= 85) return 'hungry';  // overfed
   return 'happy';
+}
+
+/* ── Detect overfed vs underfed ─────────── */
+function hungerContext() {
+  if (stats.hunger >= 85) return 'overfed';
+  if (stats.hunger < 40)  return 'starving';
+  return 'ok';
 }
 
 /* ── Switch displayed creature ───────────── */
@@ -412,22 +428,33 @@ function switchCreature(newVis) {
 
 /* ── Update stat bars ────────────────────── */
 function renderStats() {
-  var map = { hunger:'hunger', mood:'mood', energy:'energy' };
-  for (var k in map) {
+  var keys = ['hunger', 'mood', 'energy'];
+  for (var i = 0; i < keys.length; i++) {
+    var k   = keys[i];
     var v   = Math.round(stats[k]);
     var bar = document.getElementById('bar-' + k);
     var val = document.getElementById('val-' + k);
     bar.style.width = v + '%';
     val.textContent = v;
-    bar.classList.toggle('low', v < 40);
+    if (k === 'hunger') {
+      bar.classList.toggle('low',  v < 40);
+      bar.classList.toggle('high', v >= 85);
+    } else {
+      bar.classList.toggle('low', v < 40);
+      bar.classList.remove('high');
+    }
   }
 }
 
 /* ── Speech bubble ───────────────────────── */
 function say(stateKey) {
-  var list = PHRASES[stateKey];
-  var idx  = phraseIdx[stateKey] % list.length;
-  phraseIdx[stateKey]++;
+  // If shown as hungry but reason is overfed — use overfed phrases
+  var phraseKey = (stateKey === 'hungry' && hungerContext() === 'overfed')
+    ? 'overfed' : stateKey;
+  if (!phraseIdx[phraseKey]) phraseIdx[phraseKey] = 0;
+  var list = PHRASES[phraseKey];
+  var idx  = phraseIdx[phraseKey] % list.length;
+  phraseIdx[phraseKey]++;
   document.getElementById('bubble').textContent = list[idx];
 }
 
