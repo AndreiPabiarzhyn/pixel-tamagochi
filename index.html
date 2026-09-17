@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Зубрик — Питомец</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070b1a;
+    --surface: #111827;
+    --border: #1e2d4a;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --happy: #34d399;
+    --hungry: #f97316;
+    --sleep: #818cf8;
+    --btn-radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  /* stars */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 15% 25%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 40% 10%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 35%, rgba(255,255,255,.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 88% 15%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 22% 70%, rgba(255,255,255,.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 80%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 65%, rgba(255,255,255,.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 10% 90%, rgba(255,255,255,.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 95% 50%, #fff 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 33% 50%, rgba(255,255,255,.3) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 24px;
+    padding: 36px 32px 32px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(99,102,241,.08);
+  }
+
+  .pet-name {
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: .02em;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .pet-status {
+    font-size: .9rem;
+    color: var(--muted);
+    margin-bottom: 28px;
+    min-height: 1.4em;
+    transition: color .3s;
+  }
+
+  .pet-stage {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 28px;
+  }
+
+  .pet-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity .35s ease;
+    image-rendering: pixelated;
+  }
+
+  .pet-svg.active { opacity: 1; }
+
+  .buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn {
+    border: none;
+    border-radius: var(--btn-radius);
+    padding: 14px 20px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .12s, box-shadow .2s, opacity .2s;
+    color: #fff;
+  }
+
+  .btn:hover  { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+  .btn:active { transform: translateY(0);    box-shadow: none; }
+
+  .btn.active { outline: 3px solid #fff; outline-offset: 2px; }
+
+  .btn-happy  { background: linear-gradient(135deg, #059669, #34d399); }
+  .btn-hungry { background: linear-gradient(135deg, #c2410c, #f97316); }
+  .btn-sleep  { background: linear-gradient(135deg, #4338ca, #818cf8); }
+
+  .mood-bar {
+    margin-top: 24px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    color: var(--muted);
+  }
+
+  .mood-dots {
+    display: flex;
+    gap: 4px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background .3s;
+  }
+
+  .dot.on-happy  { background: var(--happy); }
+  .dot.on-hungry { background: var(--hungry); }
+  .dot.on-sleep  { background: var(--sleep); }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="pet-name">Зубрик</div>
+  <div class="pet-status" id="status">Доволен и любопытен</div>
+
+  <div class="pet-stage">
+
+    <!-- HAPPY -->
+    <svg class="pet-svg active" id="svg-happy" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <!-- body -->
+      <rect x="3" y="2" width="10" height="10" fill="#6ee7b7"/>
+      <rect x="2" y="3" width="1"  height="8"  fill="#6ee7b7"/>
+      <rect x="13" y="3" width="1" height="8"  fill="#6ee7b7"/>
+      <!-- ears -->
+      <rect x="2" y="1" width="2" height="2" fill="#34d399"/>
+      <rect x="12" y="1" width="2" height="2" fill="#34d399"/>
+      <!-- eyes -->
+      <rect x="4" y="5" width="2" height="2" fill="#064e3b"/>
+      <rect x="10" y="5" width="2" height="2" fill="#064e3b"/>
+      <!-- shine -->
+      <rect x="4" y="5" width="1" height="1" fill="#fff" opacity=".6"/>
+      <rect x="10" y="5" width="1" height="1" fill="#fff" opacity=".6"/>
+      <!-- smile -->
+      <rect x="5" y="8"  width="6" height="1" fill="#064e3b"/>
+      <rect x="4" y="7"  width="1" height="1" fill="#064e3b"/>
+      <rect x="11" y="7" width="1" height="1" fill="#064e3b"/>
+      <!-- cheeks -->
+      <rect x="3"  y="7" width="2" height="1" fill="#f87171" opacity=".5"/>
+      <rect x="11" y="7" width="2" height="1" fill="#f87171" opacity=".5"/>
+      <!-- legs -->
+      <rect x="4"  y="12" width="2" height="2" fill="#6ee7b7"/>
+      <rect x="10" y="12" width="2" height="2" fill="#6ee7b7"/>
+      <!-- tail -->
+      <rect x="13" y="9"  width="2" height="1" fill="#34d399"/>
+      <rect x="14" y="8"  width="1" height="1" fill="#34d399"/>
+    </svg>
+
+    <!-- HUNGRY -->
+    <svg class="pet-svg" id="svg-hungry" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <!-- body — slightly pale -->
+      <rect x="3" y="2" width="10" height="10" fill="#a7f3d0" opacity=".7"/>
+      <rect x="2" y="3" width="1"  height="8"  fill="#a7f3d0" opacity=".7"/>
+      <rect x="13" y="3" width="1" height="8"  fill="#a7f3d0" opacity=".7"/>
+      <!-- ears droopy -->
+      <rect x="2"  y="2" width="2" height="2" fill="#6ee7b7"/>
+      <rect x="12" y="2" width="2" height="2" fill="#6ee7b7"/>
+      <!-- eyes sad — lower -->
+      <rect x="4" y="5" width="2" height="1" fill="#064e3b"/>
+      <rect x="10" y="5" width="2" height="1" fill="#064e3b"/>
+      <!-- tear -->
+      <rect x="5"  y="7" width="1" height="2" fill="#93c5fd" opacity=".7"/>
+      <rect x="11" y="7" width="1" height="2" fill="#93c5fd" opacity=".7"/>
+      <!-- open mouth (O) -->
+      <rect x="6" y="8"  width="4" height="3" fill="#064e3b"/>
+      <rect x="7" y="9"  width="2" height="1" fill="#f87171"/>
+      <!-- hunger indicator -->
+      <rect x="6"  y="1" width="1" height="1" fill="#fbbf24"/>
+      <rect x="8"  y="0" width="1" height="1" fill="#fbbf24"/>
+      <rect x="10" y="1" width="1" height="1" fill="#fbbf24"/>
+      <!-- legs -->
+      <rect x="4"  y="12" width="2" height="2" fill="#a7f3d0" opacity=".7"/>
+      <rect x="10" y="12" width="2" height="2" fill="#a7f3d0" opacity=".7"/>
+    </svg>
+
+    <!-- SLEEP -->
+    <svg class="pet-svg" id="svg-sleep" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <!-- body darker -->
+      <rect x="3" y="3" width="10" height="9"  fill="#4f7a6a"/>
+      <rect x="2" y="4" width="1"  height="7"  fill="#4f7a6a"/>
+      <rect x="13" y="4" width="1" height="7"  fill="#4f7a6a"/>
+      <!-- ears flat -->
+      <rect x="2"  y="3" width="2" height="1" fill="#3d6358"/>
+      <rect x="12" y="3" width="2" height="1" fill="#3d6358"/>
+      <!-- closed eyes — lines -->
+      <rect x="4" y="6" width="3" height="1" fill="#0d3329"/>
+      <rect x="9" y="6" width="3" height="1" fill="#0d3329"/>
+      <!-- small mouth -->
+      <rect x="7" y="9" width="2" height="1" fill="#0d3329"/>
+      <!-- zzz -->
+      <rect x="13" y="1" width="2" height="1" fill="#818cf8"/>
+      <rect x="14" y="2" width="1" height="1" fill="#818cf8"/>
+      <rect x="12" y="3" width="3" height="1" fill="#818cf8"/>
+      <rect x="11" y="0" width="1" height="1" fill="#818cf8" opacity=".5"/>
+      <rect x="12" y="1" width="1" height="1" fill="#818cf8" opacity=".5" style="display:none"/>
+      <!-- legs tucked -->
+      <rect x="5"  y="12" width="6" height="1" fill="#4f7a6a"/>
+    </svg>
+
+  </div>
+
+  <div class="buttons">
+    <button class="btn btn-happy  active" onclick="setState('happy')">🎾 Поиграть</button>
+    <button class="btn btn-hungry"        onclick="setState('hungry')">🍎 Покормить</button>
+    <button class="btn btn-sleep"         onclick="setState('sleep')">🌙 Уложить спать</button>
+  </div>
+
+  <div class="mood-bar">
+    <span>Настроение:</span>
+    <div class="mood-dots" id="dots">
+      <div class="dot on-happy"></div>
+      <div class="dot on-happy"></div>
+      <div class="dot on-happy"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const states = {
+  happy:  { status: 'Доволен и любопытен 😊',     dots: 5 },
+  hungry: { status: 'Голодный... дай поесть 😮',  dots: 2 },
+  sleep:  { status: 'Спит. Тс-с-с... 😴',         dots: 4 },
+};
+
+const dotClass = { happy: 'on-happy', hungry: 'on-hungry', sleep: 'on-sleep' };
+
+let current = 'happy';
+
+function setState(s) {
+  if (s === current) return;
+  document.getElementById('svg-' + current).classList.remove('active');
+  document.getElementById('svg-' + s).classList.add('active');
+  document.getElementById('status').textContent = states[s].status;
+
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  const idx = ['happy','hungry','sleep'].indexOf(s);
+  document.querySelectorAll('.btn')[idx].classList.add('active');
+
+  const dotsEl = document.querySelectorAll('#dots .dot');
+  const cls = dotClass[s];
+  dotsEl.forEach((d, i) => {
+    d.className = 'dot';
+    if (i < states[s].dots) d.classList.add(cls);
+  });
+
+  current = s;
+}
+</script>
+</body>
+</html>
