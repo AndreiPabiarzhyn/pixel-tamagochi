@@ -108,6 +108,25 @@ body::before {
 .bar-fill.low  { background: #f87171 !important; }
 .bar-fill.high { background: #f87171 !important; }
 
+/* ── Lang bar ────────────────────────────── */
+.lang-bar {
+  display: flex; gap: 4px;
+  margin-bottom: 14px;
+}
+.lang-btn {
+  flex: 1; padding: 6px 0;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 10px; font-family: 'Nunito', sans-serif;
+  font-size: .78rem; font-weight: 900; color: var(--muted);
+  cursor: pointer; transition: color .2s, border-color .2s, background .2s;
+  letter-spacing: .5px;
+}
+.lang-btn:hover { color: var(--text); border-color: #4a6080; }
+.lang-btn.active {
+  background: var(--border); color: var(--text);
+  border-color: #34d399; color: #34d399;
+}
+
 /* ── Coins ───────────────────────────────── */
 .coins-badge {
   background: var(--border); border-radius: 20px;
@@ -270,6 +289,12 @@ body::before {
 <body>
 
 <div class="card" id="card">
+  <!-- Language bar -->
+  <div class="lang-bar">
+    <button class="lang-btn active" id="lang-en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn"        id="lang-ru" onclick="setLang('ru')">RU</button>
+  </div>
+
   <div class="header">
     <div class="pet-name">Зубрик</div>
     <div style="display:flex;gap:6px;align-items:center;">
@@ -401,19 +426,19 @@ body::before {
   <div class="stats">
     <div class="stat">
       <span class="stat-icon">🍎</span>
-      <span class="stat-label">Сытость</span>
+      <span class="stat-label" id="lbl-hunger">Hunger</span>
       <div class="bar-track"><div class="bar-fill bar-hunger" id="bar-hunger" style="width:75%"></div></div>
       <span class="stat-val" id="val-hunger">75</span>
     </div>
     <div class="stat">
       <span class="stat-icon">😊</span>
-      <span class="stat-label">Радость</span>
+      <span class="stat-label" id="lbl-mood">Mood</span>
       <div class="bar-track"><div class="bar-fill bar-mood" id="bar-mood" style="width:65%"></div></div>
       <span class="stat-val" id="val-mood">65</span>
     </div>
     <div class="stat">
       <span class="stat-icon">⚡</span>
-      <span class="stat-label">Энергия</span>
+      <span class="stat-label" id="lbl-energy">Energy</span>
       <div class="bar-track"><div class="bar-fill bar-energy" id="bar-energy" style="width:60%"></div></div>
       <span class="stat-val" id="val-energy">60</span>
     </div>
@@ -421,13 +446,13 @@ body::before {
 
   <!-- Action buttons -->
   <div class="buttons">
-    <button class="btn btn-play  active" id="btn-play"  onclick="doAction('play', event)" >🎾 Поиграть</button>
-    <button class="btn btn-feed"         id="btn-feed"  onclick="doAction('feed', event)" >🍎 Покормить</button>
-    <button class="btn btn-sleep"        id="btn-sleep" onclick="doAction('sleep', event)">🌙 Уложить спать</button>
+    <button class="btn btn-play  active" id="btn-play"  onclick="doAction('play', event)" >🎾 Play</button>
+    <button class="btn btn-feed"         id="btn-feed"  onclick="doAction('feed', event)" >🍎 Feed</button>
+    <button class="btn btn-sleep"        id="btn-sleep" onclick="doAction('sleep', event)">🌙 Sleep</button>
   </div>
 
   <!-- Shop -->
-  <button class="shop-toggle" onclick="toggleShop()">🛍️ Магазин аксессуаров</button>
+  <button class="shop-toggle" id="shop-toggle-btn" onclick="toggleShop()">🛍️ Accessory Shop</button>
   <div class="shop-panel" id="shop-panel">
 
     <div class="shop-item" id="si-crown">
@@ -439,10 +464,10 @@ body::before {
         <circle cx="29" cy="26" r="3" fill="#818cf8"/>
       </svg>
       <div class="shop-item-info">
-        <div class="shop-item-name">Корона</div>
-        <div class="shop-item-price" id="price-crown">💰 25 монет</div>
+        <div class="shop-item-name" id="name-crown">Crown</div>
+        <div class="shop-item-price" id="price-crown">💰 25 coins</div>
       </div>
-      <button class="shop-item-btn" id="btn-crown" onclick="shopAction('crown')">Купить</button>
+      <button class="shop-item-btn" id="btn-crown" onclick="shopAction('crown')">Buy</button>
     </div>
 
     <div class="shop-item" id="si-glasses">
@@ -454,10 +479,10 @@ body::before {
         <line x1="36" y1="7"  x2="36" y2="10" stroke="#f472b6" stroke-width="2"/>
       </svg>
       <div class="shop-item-info">
-        <div class="shop-item-name">Очки</div>
-        <div class="shop-item-price" id="price-glasses">💰 20 монет</div>
+        <div class="shop-item-name" id="name-glasses">Glasses</div>
+        <div class="shop-item-price" id="price-glasses">💰 20 coins</div>
       </div>
-      <button class="shop-item-btn" id="btn-glasses" onclick="shopAction('glasses')">Купить</button>
+      <button class="shop-item-btn" id="btn-glasses" onclick="shopAction('glasses')">Buy</button>
     </div>
 
     <div class="shop-item" id="si-bow">
@@ -468,10 +493,10 @@ body::before {
         <circle cx="19" cy="12" r="2.5" fill="#f0abfc"/>
       </svg>
       <div class="shop-item-info">
-        <div class="shop-item-name">Бантик</div>
-        <div class="shop-item-price" id="price-bow">💰 15 монет</div>
+        <div class="shop-item-name" id="name-bow">Bow</div>
+        <div class="shop-item-price" id="price-bow">💰 15 coins</div>
       </div>
-      <button class="shop-item-btn" id="btn-bow" onclick="shopAction('bow')">Купить</button>
+      <button class="shop-item-btn" id="btn-bow" onclick="shopAction('bow')">Buy</button>
     </div>
 
   </div>
@@ -503,34 +528,87 @@ var ACTIONS = {
 };
 
 var PHRASES = {
-  happy: [
-    'Побежали ещё раз! Я могу! 🏃',
-    'Это лучший день! Играем? 🎾',
-    'Хочу прыгать до звёзд! ✨',
-    'Ты мой самый лучший! 🐾',
-    'Хвостик сам крутится от радости!'
-  ],
-  hungry: [
-    'Живот говорит «бурр-р-р»... 🍕',
-    'Смотрю голодными глазами...',
-    'Дай хоть кусочек, пожалуйста! 🥺',
-    'Есть хочу!! Очень!! Срочно!!',
-    'Ммм... чем пахнет? Дай мне! 😮'
-  ],
-  overfed: [
-    'Уп-с... живот лопается... 🤢',
-    'Больше не надо. Пожалуйста. Стоп.',
-    'Я больше не могу двигаться... 😵',
-    'Зачем ты меня так кормишь?! 😤',
-    'Икаю... икаю... *ик* 🫧'
-  ],
-  sleep: [
-    'Zzz... хорошо тут... тепло... Zzz',
-    'Не буди... я почти на другой планете...',
-    'Снится мячик... Zzz 💤',
-    'Только ещё пять минут... Zzz',
-    'Сон — лучший друг... Zzz 💤'
-  ]
+  en: {
+    happy: [
+      "Let's go again! I can do this! 🏃",
+      "Best day ever! Wanna play? 🎾",
+      "I want to bounce all the way to the stars! ✨",
+      "You're my favourite! 🐾",
+      "My tail is wagging by itself!"
+    ],
+    hungry: [
+      "My tummy says 'grrr'... 🍕",
+      "Looking at you with hungry eyes...",
+      "Just one little bite, please! 🥺",
+      "I'M SO HUNGRY!! RIGHT NOW!!",
+      "Mmm... what's that smell? Give it! 😮"
+    ],
+    overfed: [
+      "Oop... tummy's about to pop... 🤢",
+      "No more. Please. Stop.",
+      "I can't move anymore... 😵",
+      "Why are you feeding me so much?! 😤",
+      "Hic... hic... *hic* 🫧"
+    ],
+    sleep: [
+      "Zzz... so cozy here... warm... Zzz",
+      "Don't wake me... I'm almost on another planet...",
+      "Dreaming of a ball... Zzz 💤",
+      "Just five more minutes... Zzz",
+      "Sleep is the best friend... Zzz 💤"
+    ]
+  },
+  ru: {
+    happy: [
+      'Побежали ещё раз! Я могу! 🏃',
+      'Это лучший день! Играем? 🎾',
+      'Хочу прыгать до звёзд! ✨',
+      'Ты мой самый лучший! 🐾',
+      'Хвостик сам крутится от радости!'
+    ],
+    hungry: [
+      'Живот говорит «бурр-р-р»... 🍕',
+      'Смотрю голодными глазами...',
+      'Дай хоть кусочек, пожалуйста! 🥺',
+      'Есть хочу!! Очень!! Срочно!!',
+      'Ммм... чем пахнет? Дай мне! 😮'
+    ],
+    overfed: [
+      'Уп-с... живот лопается... 🤢',
+      'Больше не надо. Пожалуйста. Стоп.',
+      'Я больше не могу двигаться... 😵',
+      'Зачем ты меня так кормишь?! 😤',
+      'Икаю... икаю... *ик* 🫧'
+    ],
+    sleep: [
+      'Zzz... хорошо тут... тепло... Zzz',
+      'Не буди... я почти на другой планете...',
+      'Снится мячик... Zzz 💤',
+      'Только ещё пять минут... Zzz',
+      'Сон — лучший друг... Zzz 💤'
+    ]
+  }
+};
+
+var TRANS = {
+  en: {
+    statLabels:  { hunger:'Hunger', mood:'Mood', energy:'Energy' },
+    actionBtns:  { play:'🎾 Play', feed:'🍎 Feed', sleep:'🌙 Sleep' },
+    levelPrefix: 'Lv.',
+    shopToggle:  '🛍️ Accessory Shop',
+    shopNames:   { crown:'Crown', glasses:'Glasses', bow:'Bow' },
+    coinWord:    'coins',
+    buy: 'Buy', wear: 'Wear', remove: 'Remove ✓', owned: 'Owned', equipped: 'On'
+  },
+  ru: {
+    statLabels:  { hunger:'Сытость', mood:'Радость', energy:'Энергия' },
+    actionBtns:  { play:'🎾 Поиграть', feed:'🍎 Покормить', sleep:'🌙 Спать' },
+    levelPrefix: 'Ур.',
+    shopToggle:  '🛍️ Магазин аксессуаров',
+    shopNames:   { crown:'Корона', glasses:'Очки', bow:'Бантик' },
+    coinWord:    'монет',
+    buy: 'Купить', wear: 'Надеть', remove: 'Снять ✓', owned: 'Куплено', equipped: 'Надето'
+  }
 };
 
 var FLOATS = { play:'🎾', feed:'🍎', sleep:'😴' };
@@ -543,16 +621,19 @@ var SHOP = {
 
 var ANIMS = { happy:'anim-bounce', hungry:'anim-shake', sleep:'anim-breathe' };
 
+var lang      = 'en';
 var stats     = { hunger:75, mood:65, energy:60 };
 var visState  = 'happy';
 var sleeping  = false;
 var lastBtn   = 'play';
 var xp        = 0;
 var level     = 1;
-var phraseIdx = { happy:0, hungry:0, sleep:0 };
+var phraseIdx = {};
 var coins     = 0;
 var owned     = { crown:false, glasses:false, bow:false };
 var equipped  = { crown:false, glasses:false, bow:false };
+
+function T() { return TRANS[lang]; }
 
 function clamp(v){ return Math.max(0, Math.min(100, v)); }
 
@@ -607,13 +688,13 @@ function renderStats() {
 
 /* ── Speech bubble ───────────────────────── */
 function say(stateKey) {
-  // If shown as hungry but reason is overfed — use overfed phrases
   var phraseKey = (stateKey === 'hungry' && hungerContext() === 'overfed')
     ? 'overfed' : stateKey;
-  if (!phraseIdx[phraseKey]) phraseIdx[phraseKey] = 0;
-  var list = PHRASES[phraseKey];
-  var idx  = phraseIdx[phraseKey] % list.length;
-  phraseIdx[phraseKey]++;
+  var key = lang + '_' + phraseKey;
+  if (!phraseIdx[key]) phraseIdx[key] = 0;
+  var list = PHRASES[lang][phraseKey];
+  var idx  = phraseIdx[key] % list.length;
+  phraseIdx[key]++;
   document.getElementById('bubble').textContent = list[idx];
 }
 
@@ -631,36 +712,39 @@ function toggleShop() {
 }
 
 function renderShop() {
+  var t   = T();
   var ids = ['crown','glasses','bow'];
   for (var i = 0; i < ids.length; i++) {
     var id  = ids[i];
     var btn = document.getElementById('btn-' + id);
     var si  = document.getElementById('si-' + id);
     var pr  = document.getElementById('price-' + id);
+    document.getElementById('name-' + id).textContent = t.shopNames[id];
     if (!owned[id]) {
-      btn.textContent = 'Купить';
+      btn.textContent = t.buy;
       btn.className   = 'shop-item-btn';
       btn.disabled    = coins < SHOP[id].cost;
-      pr.textContent  = '💰 ' + SHOP[id].cost + ' монет';
+      pr.textContent  = '💰 ' + SHOP[id].cost + ' ' + t.coinWord;
       pr.className    = 'shop-item-price';
       si.classList.remove('owned','equipped');
     } else if (!equipped[id]) {
-      btn.textContent = 'Надеть';
+      btn.textContent = t.wear;
       btn.className   = 'shop-item-btn equip-btn';
       btn.disabled    = false;
-      pr.textContent  = 'Куплено';
+      pr.textContent  = t.owned;
       pr.className    = 'shop-item-price owned-label';
       si.classList.add('owned');
       si.classList.remove('equipped');
     } else {
-      btn.textContent = 'Снять ✓';
+      btn.textContent = t.remove;
       btn.className   = 'shop-item-btn equipped-btn';
       btn.disabled    = false;
-      pr.textContent  = 'Надето';
+      pr.textContent  = t.equipped;
       pr.className    = 'shop-item-price owned-label';
       si.classList.add('owned','equipped');
     }
   }
+  document.getElementById('shop-toggle-btn').textContent = t.shopToggle;
 }
 
 function shopAction(id) {
@@ -684,8 +768,31 @@ function addXP(n) {
   var lv = Math.floor(xp / 50) + 1;
   if (lv > level) {
     level = lv;
-    document.getElementById('level-badge').textContent = 'Ур. ' + level;
+    document.getElementById('level-badge').textContent = T().levelPrefix + ' ' + level;
   }
+}
+
+/* ── Language switch ─────────────────────── */
+function setLang(l) {
+  lang = l;
+  var t = T();
+  // lang buttons
+  document.getElementById('lang-en').classList.toggle('active', l === 'en');
+  document.getElementById('lang-ru').classList.toggle('active', l === 'ru');
+  // stat labels
+  document.getElementById('lbl-hunger').textContent = t.statLabels.hunger;
+  document.getElementById('lbl-mood').textContent   = t.statLabels.mood;
+  document.getElementById('lbl-energy').textContent = t.statLabels.energy;
+  // action buttons
+  document.getElementById('btn-play').textContent  = t.actionBtns.play;
+  document.getElementById('btn-feed').textContent  = t.actionBtns.feed;
+  document.getElementById('btn-sleep').textContent = t.actionBtns.sleep;
+  // level badge
+  document.getElementById('level-badge').textContent = t.levelPrefix + ' ' + level;
+  // shop
+  renderShop();
+  // re-say current phrase in new language
+  say(visState);
 }
 
 /* ── Ripple on button ────────────────────── */
