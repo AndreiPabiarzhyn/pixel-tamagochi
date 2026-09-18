@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Заготовка питомца</title>
+<title>Выбери питомца</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -36,7 +36,13 @@ body {
 .lb.on { background:var(--accent); border-color:var(--accent); color:#fff; }
 
 h1 { font-size:24px; font-weight:800; text-align:center; margin-bottom:8px; }
-.sub { color:var(--muted); font-size:15px; text-align:center; max-width:520px; margin-bottom:28px; }
+.sub { color:var(--muted); font-size:15px; text-align:center; max-width:540px; margin-bottom:8px; line-height:1.5; }
+.pick {
+  display:inline-block; margin-bottom:26px;
+  background:rgba(52,211,153,.12); border:1px solid var(--accent);
+  color:var(--accent); font-weight:800; font-size:13px;
+  padding:6px 16px; border-radius:20px; text-align:center;
+}
 
 .grid {
   display:flex; gap:18px; flex-wrap:wrap; justify-content:center;
@@ -46,7 +52,9 @@ h1 { font-size:24px; font-weight:800; text-align:center; margin-bottom:8px; }
   background:var(--card); border:1.5px solid var(--border);
   border-radius:20px; padding:18px 16px 16px;
   width:220px; display:flex; flex-direction:column; align-items:center;
+  transition:.2s;
 }
+.item:hover { border-color:var(--accent); transform:translateY(-3px); }
 .item img {
   width:150px; height:150px;
   image-rendering:pixelated;
@@ -54,7 +62,7 @@ h1 { font-size:24px; font-weight:800; text-align:center; margin-bottom:8px; }
 }
 .fname {
   font-family:ui-monospace,'Courier New',monospace;
-  font-size:14px; color:var(--accent); font-weight:700;
+  font-size:13px; color:var(--accent); font-weight:700;
   margin:12px 0 10px; word-break:break-all; text-align:center;
 }
 .dl {
@@ -65,9 +73,17 @@ h1 { font-size:24px; font-weight:800; text-align:center; margin-bottom:8px; }
   text-decoration:none; transition:.18s;
 }
 .dl:hover { filter:brightness(1.12); }
-.note {
-  margin-top:26px; max-width:520px; text-align:center;
-  color:var(--muted); font-size:13px; line-height:1.55;
+
+.next {
+  margin-top:28px; max-width:540px;
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:16px; padding:16px 20px;
+}
+.next h2 { font-size:15px; font-weight:800; margin-bottom:8px; }
+.next p { color:var(--muted); font-size:13px; line-height:1.6; }
+.next code {
+  font-family:ui-monospace,'Courier New',monospace;
+  color:var(--accent); font-weight:700;
 }
 </style>
 </head>
@@ -75,42 +91,73 @@ h1 { font-size:24px; font-weight:800; text-align:center; margin-bottom:8px; }
 
 <div class="lang-bar" id="langBar"></div>
 
-<h1 id="ttl">Заготовка питомца</h1>
-<p class="sub" id="sub">Потерял рисунок с прошлого урока? Скачай три готовых состояния и работай с ними.</p>
+<h1 id="ttl">Выбери питомца</h1>
+<p class="sub" id="sub">Потерял своё существо с прошлого урока? Выбери одного из трёх — он будет твоим питомцем.</p>
+<div class="pick" id="pick">Скачай только одного</div>
 
 <div class="grid">
   <div class="item">
-    <img src="zagotovka/pet_happy.png" alt="Довольный питомец">
+    <img src="zagotovka/pet_green_happy.png" alt="">
     <div class="fname">pet_happy.png</div>
-    <a class="dl" href="zagotovka/pet_happy.png" download="pet_happy.png" data-dl>Скачать</a>
+    <a class="dl" href="zagotovka/pet_green_happy.png" download="pet_happy.png" data-dl>Скачать</a>
   </div>
   <div class="item">
-    <img src="zagotovka/pet_hungry.png" alt="Голодный питомец">
-    <div class="fname">pet_hungry.png</div>
-    <a class="dl" href="zagotovka/pet_hungry.png" download="pet_hungry.png" data-dl>Скачать</a>
+    <img src="zagotovka/pet_purple_happy.png" alt="">
+    <div class="fname">pet_happy.png</div>
+    <a class="dl" href="zagotovka/pet_purple_happy.png" download="pet_happy.png" data-dl>Скачать</a>
   </div>
   <div class="item">
-    <img src="zagotovka/pet_sleep.png" alt="Спящий питомец">
-    <div class="fname">pet_sleep.png</div>
-    <a class="dl" href="zagotovka/pet_sleep.png" download="pet_sleep.png" data-dl>Скачать</a>
+    <img src="zagotovka/pet_orange_happy.png" alt="">
+    <div class="fname">pet_happy.png</div>
+    <a class="dl" href="zagotovka/pet_orange_happy.png" download="pet_happy.png" data-dl>Скачать</a>
   </div>
 </div>
 
-<p class="note" id="note">Имена файлов менять нельзя — они попадут в промпт для Aiko слово в слово.</p>
+<div class="next">
+  <h2 id="nxt-h">Что дальше</h2>
+  <p id="nxt-p"></p>
+</div>
 
 <script>
 var LANG_ORDER = ['EN','RU','ES','ID','IT','TR','PL','PT','AR'];
 
 var T = {
-  EN: { dir:'ltr', ttl:'Pet Starter Pack', sub:'Lost your drawing from last lesson? Download these three ready-made states and work with them.', dl:'Download', note:'Do not rename the files — they go into the prompt for Aiko word for word.' },
-  RU: { dir:'ltr', ttl:'Заготовка питомца', sub:'Потерял рисунок с прошлого урока? Скачай три готовых состояния и работай с ними.', dl:'Скачать', note:'Имена файлов менять нельзя — они попадут в промпт для Aiko слово в слово.' },
-  ES: { dir:'ltr', ttl:'Mascota de repuesto', sub:'¿Perdiste tu dibujo de la clase anterior? Descarga estos tres estados listos y trabaja con ellos.', dl:'Descargar', note:'No cambies los nombres de los archivos — irán en el prompt para Aiko palabra por palabra.' },
-  ID: { dir:'ltr', ttl:'Paket Awal Hewan', sub:'Kehilangan gambarmu dari pelajaran lalu? Unduh tiga keadaan siap pakai ini dan gunakan.', dl:'Unduh', note:'Jangan ubah nama file — nama itu masuk ke prompt untuk Aiko kata demi kata.' },
-  IT: { dir:'ltr', ttl:'Cucciolo di riserva', sub:'Hai perso il disegno della lezione scorsa? Scarica questi tre stati pronti e lavora con loro.', dl:'Scarica', note:'Non rinominare i file — finiranno nel prompt per Aiko parola per parola.' },
-  TR: { dir:'ltr', ttl:'Hazır Evcil Hayvan', sub:'Geçen dersteki çizimini mi kaybettin? Bu üç hazır durumu indir ve onlarla çalış.', dl:'İndir', note:'Dosya adlarını değiştirme — Aiko için yazacağın komuta harfi harfine girecekler.' },
-  PL: { dir:'ltr', ttl:'Zapasowy pupil', sub:'Zgubiłeś rysunek z poprzedniej lekcji? Pobierz te trzy gotowe stany i pracuj na nich.', dl:'Pobierz', note:'Nie zmieniaj nazw plików — trafią do promptu dla Aiko słowo w słowo.' },
-  PT: { dir:'ltr', ttl:'Mascote de reserva', sub:'Perdeste o teu desenho da aula passada? Descarrega estes três estados prontos e trabalha com eles.', dl:'Descarregar', note:'Não mudes os nomes dos ficheiros — vão para o prompt do Aiko palavra por palavra.' },
-  AR: { dir:'rtl', ttl:'حزمة الحيوان الجاهزة', sub:'أضعت رسمك من الدرس الماضي؟ نزّل هذه الحالات الثلاث الجاهزة واعمل بها.', dl:'تنزيل', note:'لا تغيّر أسماء الملفات — ستدخل في الأمر الموجّه لـ Aiko حرفياً.' }
+  EN: { dir:'ltr', ttl:'Pick a Pet',
+    sub:'Lost your creature from last lesson? Pick one of these three — it becomes your pet.',
+    pick:'Download only one', dl:'Download', nxt:'What next',
+    p:'This is the <b>happy</b> state, already named <code>pet_happy.png</code>. Now draw the other two states for the same pet yourself: <code>pet_hungry.png</code> and <code>pet_sleep.png</code>. Keep the filenames exactly like this — they go into the prompt for Aiko word for word.' },
+  RU: { dir:'ltr', ttl:'Выбери питомца',
+    sub:'Потерял своё существо с прошлого урока? Выбери одного из трёх — он будет твоим питомцем.',
+    pick:'Скачай только одного', dl:'Скачать', nxt:'Что дальше',
+    p:'Это состояние <b>довольный</b>, файл уже называется <code>pet_happy.png</code>. Теперь нарисуй этому же питомцу ещё два состояния сам: <code>pet_hungry.png</code> и <code>pet_sleep.png</code>. Имена файлов оставь ровно такими — они попадут в промпт для Aiko слово в слово.' },
+  ES: { dir:'ltr', ttl:'Elige una mascota',
+    sub:'¿Perdiste tu criatura de la clase anterior? Elige una de estas tres — será tu mascota.',
+    pick:'Descarga solo una', dl:'Descargar', nxt:'Qué sigue',
+    p:'Este es el estado <b>contento</b>, el archivo ya se llama <code>pet_happy.png</code>. Ahora dibuja tú mismo los otros dos estados de la misma mascota: <code>pet_hungry.png</code> y <code>pet_sleep.png</code>. Deja los nombres exactamente así — irán en el prompt para Aiko palabra por palabra.' },
+  ID: { dir:'ltr', ttl:'Pilih Hewan',
+    sub:'Kehilangan makhlukmu dari pelajaran lalu? Pilih satu dari tiga ini — dia jadi hewanmu.',
+    pick:'Unduh satu saja', dl:'Unduh', nxt:'Selanjutnya',
+    p:'Ini keadaan <b>senang</b>, filenya sudah bernama <code>pet_happy.png</code>. Sekarang gambar sendiri dua keadaan lain untuk hewan yang sama: <code>pet_hungry.png</code> dan <code>pet_sleep.png</code>. Biarkan nama file tepat seperti ini — nama itu masuk ke prompt untuk Aiko kata demi kata.' },
+  IT: { dir:'ltr', ttl:'Scegli un cucciolo',
+    sub:'Hai perso la tua creatura della lezione scorsa? Scegline uno di questi tre — sarà il tuo cucciolo.',
+    pick:'Scaricane solo uno', dl:'Scarica', nxt:'Cosa fare ora',
+    p:'Questo è lo stato <b>felice</b>, il file si chiama già <code>pet_happy.png</code>. Ora disegna tu gli altri due stati dello stesso cucciolo: <code>pet_hungry.png</code> e <code>pet_sleep.png</code>. Lascia i nomi esattamente così — finiranno nel prompt per Aiko parola per parola.' },
+  TR: { dir:'ltr', ttl:'Bir Evcil Hayvan Seç',
+    sub:'Geçen dersteki yaratığını mı kaybettin? Bu üçünden birini seç — o senin evcil hayvanın olacak.',
+    pick:'Sadece birini indir', dl:'İndir', nxt:'Sırada ne var',
+    p:'Bu <b>mutlu</b> durumu, dosyanın adı zaten <code>pet_happy.png</code>. Şimdi aynı evcil hayvan için diğer iki durumu kendin çiz: <code>pet_hungry.png</code> ve <code>pet_sleep.png</code>. Dosya adlarını tam böyle bırak — Aiko için yazacağın komuta harfi harfine girecekler.' },
+  PL: { dir:'ltr', ttl:'Wybierz pupila',
+    sub:'Zgubiłeś swoje stworzenie z poprzedniej lekcji? Wybierz jednego z tych trzech — będzie twoim pupilem.',
+    pick:'Pobierz tylko jednego', dl:'Pobierz', nxt:'Co dalej',
+    p:'To stan <b>zadowolony</b>, plik już nazywa się <code>pet_happy.png</code>. Teraz sam narysuj temu samemu pupilowi dwa pozostałe stany: <code>pet_hungry.png</code> i <code>pet_sleep.png</code>. Zostaw nazwy dokładnie takie — trafią do promptu dla Aiko słowo w słowo.' },
+  PT: { dir:'ltr', ttl:'Escolhe um mascote',
+    sub:'Perdeste a tua criatura da aula passada? Escolhe um destes três — vai ser o teu mascote.',
+    pick:'Descarrega só um', dl:'Descarregar', nxt:'O que vem a seguir',
+    p:'Este é o estado <b>contente</b>, o ficheiro já se chama <code>pet_happy.png</code>. Agora desenha tu os outros dois estados do mesmo mascote: <code>pet_hungry.png</code> e <code>pet_sleep.png</code>. Deixa os nomes exactamente assim — vão para o prompt do Aiko palavra por palavra.' },
+  AR: { dir:'rtl', ttl:'اختر حيواناً',
+    sub:'أضعت مخلوقك من الدرس الماضي؟ اختر واحداً من هؤلاء الثلاثة — سيكون حيوانك.',
+    pick:'نزّل واحداً فقط', dl:'تنزيل', nxt:'ما التالي',
+    p:'هذه حالة <b>سعيد</b>، واسم الملف هو <code>pet_happy.png</code> بالفعل. الآن ارسم بنفسك الحالتين الأخريين لنفس الحيوان: <code>pet_hungry.png</code> و <code>pet_sleep.png</code>. اترك أسماء الملفات هكذا تماماً — ستدخل في الأمر الموجّه لـ Aiko حرفياً.' }
 };
 
 function setLang(l) {
@@ -119,9 +166,11 @@ function setLang(l) {
   document.getElementById('langBar').innerHTML = LANG_ORDER.map(function(code) {
     return '<button class="lb' + (code === l ? ' on' : '') + '" onclick="setLang(\'' + code + '\')">' + code + '</button>';
   }).join('');
-  document.getElementById('ttl').textContent  = t.ttl;
-  document.getElementById('sub').textContent  = t.sub;
-  document.getElementById('note').textContent = t.note;
+  document.getElementById('ttl').textContent   = t.ttl;
+  document.getElementById('sub').textContent   = t.sub;
+  document.getElementById('pick').textContent  = t.pick;
+  document.getElementById('nxt-h').textContent = t.nxt;
+  document.getElementById('nxt-p').innerHTML   = t.p;
   var btns = document.querySelectorAll('[data-dl]');
   for (var i = 0; i < btns.length; i++) btns[i].textContent = t.dl;
 }
