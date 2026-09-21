@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Зубрик</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #060d1f;
+  --card:   #111e35;
+  --border: #1c2e50;
+  --text:   #e2e8f0;
+  --muted:  #4a6080;
+  --surface:#0c1528;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 16px 24px;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    radial-gradient(1.5px 1.5px at  8% 15%, rgba(255,255,255,.5) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 25%  5%, rgba(255,255,255,.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 42% 30%, rgba(255,255,255,.4) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 63%  8%, rgba(255,255,255,.5) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 80% 22%, rgba(255,255,255,.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 91%  6%, rgba(255,255,255,.45) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 17% 70%, rgba(255,255,255,.25) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 55% 82%, rgba(255,255,255,.35) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 76% 60%, rgba(255,255,255,.4) 0%, transparent 100%),
+    radial-gradient(1px   1px   at 95% 75%, rgba(255,255,255,.3) 0%, transparent 100%);
+  pointer-events:none; z-index:0;
+}
+
+.card {
+  position: relative; z-index: 1;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 28px;
+  padding: 22px 20px 20px;
+  max-width: 360px; width: 100%;
+  box-shadow: 0 0 80px rgba(52,211,153,.12);
+  transition: box-shadow .6s;
+}
+
+/* ── Header ─────────────────────────────── */
+.header { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+.pet-name { font-size:1.55rem; font-weight:900; letter-spacing:-.5px; }
+.level-badge {
+  background: var(--border); border-radius: 20px;
+  padding: 3px 10px; font-size:.75rem; font-weight:700;
+  color: #34d399; transition: color .4s;
+}
+
+/* ── Stage ───────────────────────────────── */
+.stage {
+  position: relative; width: 180px; height: 180px;
+  margin: 10px auto 14px;
+}
+.creature {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transform: scale(.82) translateY(6px);
+  transition: opacity .3s, transform .3s;
+  pointer-events: none;
+}
+.creature.visible { opacity: 1; transform: scale(1) translateY(0); }
+.creature svg { width:100%; height:100%; overflow:visible; }
+
+/* ── Speech bubble ───────────────────────── */
+.bubble {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 16px 16px 16px 4px;
+  padding: 8px 12px 8px 22px;
+  font-size: .82rem; font-weight: 700;
+  min-height: 38px; margin-bottom: 13px;
+  position: relative; transition: color .3s;
+}
+.bubble::before {
+  content: '💬'; position: absolute; left: 5px; top: 50%;
+  transform: translateY(-50%); font-size: .78rem;
+}
+
+/* ── Stat bars ───────────────────────────── */
+.stats { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.stat  { display:flex; align-items:center; gap:8px; }
+.stat-icon  { font-size:.95rem; width:20px; text-align:center; }
+.stat-label { font-size:.72rem; color:var(--muted); width:56px; flex-shrink:0; }
+.bar-track  { flex:1; height:8px; background:var(--border); border-radius:99px; overflow:hidden; }
+.bar-fill   {
+  height: 100%; border-radius: 99px;
+  transition: width .6s cubic-bezier(.34,1.56,.64,1), background .4s;
+}
+.bar-hunger { background: linear-gradient(90deg,#fb923c,#fbbf24); }
+.bar-mood   { background: linear-gradient(90deg,#34d399,#6ee7b7); }
+.bar-energy { background: linear-gradient(90deg,#818cf8,#a5b4fc); }
+.bar-fill.low  { background: #f87171 !important; }
+.bar-fill.high { background: #f87171 !important; }
+
+/* ── Lang bar (same as prompt-builder) ────── */
+.lang-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(4,8,23,.75); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+}
+.lb {
+  padding: 4px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: none;
+  color: var(--muted); font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: .18s; letter-spacing: .03em;
+}
+.lb:hover { border-color: #818cf8; color: #818cf8; }
+.lb.on { background: #34d399; border-color: #34d399; color: #fff; }
+
+/* ── Coins ───────────────────────────────── */
+.coins-badge {
+  background: var(--border); border-radius: 20px;
+  padding: 3px 10px; font-size: .75rem; font-weight: 700; color: #fbbf24;
+}
+
+/* ── Accessory overlay ───────────────────── */
+.acc-overlay {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 2;
+}
+
+/* ── Shop ────────────────────────────────── */
+.shop-toggle {
+  width: 100%; margin-top: 10px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 10px 16px;
+  font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 700;
+  color: var(--muted); cursor: pointer;
+  transition: color .2s, border-color .2s;
+  text-align: left;
+}
+.shop-toggle:hover { color: var(--text); border-color: #fbbf2466; }
+
+.shop-panel {
+  margin-top: 10px; display: none;
+  flex-direction: column; gap: 8px;
+}
+.shop-panel.open { display: flex; }
+
+.shop-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 9px 12px;
+  cursor: pointer; transition: border-color .2s, box-shadow .2s;
+}
+.shop-item:hover { border-color: #fbbf2466; box-shadow: 0 0 12px #fbbf2415; }
+.shop-item.owned { border-color: #fbbf2466; }
+.shop-item.equipped { border-color: #fbbf24; box-shadow: 0 0 16px #fbbf2430; }
+
+.shop-item-icon { width: 38px; height: 38px; flex-shrink: 0; }
+.shop-item-info { flex: 1; }
+.shop-item-name { font-size: .85rem; font-weight: 700; }
+.shop-item-price {
+  font-size: .75rem; color: #fbbf24; font-weight: 700; margin-top: 1px;
+}
+.shop-item-price.owned-label { color: var(--muted); }
+
+.shop-item-btn {
+  background: linear-gradient(135deg,#b45309,#fbbf24);
+  border: none; border-radius: 10px;
+  padding: 6px 12px; font-family:'Nunito',sans-serif;
+  font-size: .78rem; font-weight: 900; color: #1c0a00;
+  cursor: pointer; flex-shrink: 0;
+  transition: transform .1s, opacity .2s;
+}
+.shop-item-btn:hover   { transform: scale(1.05); }
+.shop-item-btn:active  { transform: scale(.97); }
+.shop-item-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+.shop-item-btn.equip-btn {
+  background: linear-gradient(135deg,#1c2e50,#34d399);
+  color: #fff;
+}
+.shop-item-btn.equipped-btn {
+  background: linear-gradient(135deg,#059669,#34d399);
+  color: #fff;
+}
+.stat-val { font-size:.7rem; color:var(--muted); width:26px; text-align:right; font-variant-numeric:tabular-nums; }
+
+/* ── Buttons ─────────────────────────────── */
+.buttons { display:flex; flex-direction:column; gap:8px; }
+.btn {
+  border: 2px solid transparent; border-radius: 14px;
+  padding: 12px 16px;
+  font-family: 'Nunito', sans-serif; font-size: .95rem; font-weight: 700;
+  cursor: pointer; color: #fff;
+  position: relative; overflow: hidden;
+  transition: transform .12s, box-shadow .2s, border-color .3s, opacity .2s;
+}
+.btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+.btn:active { transform: scale(.97); box-shadow: none; }
+.btn.active { border-color: rgba(255,255,255,.6); }
+.btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+.btn-play  { background: linear-gradient(135deg,#059669,#34d399); }
+.btn-feed  { background: linear-gradient(135deg,#c2410c,#fb923c); }
+.btn-sleep { background: linear-gradient(135deg,#4338ca,#818cf8); }
+
+/* Ripple */
+.ripple {
+  position:absolute; border-radius:50%;
+  background:rgba(255,255,255,.35);
+  transform:scale(0); animation:rippleAnim .5s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes rippleAnim { to { transform:scale(4); opacity:0; } }
+
+/* Floating emoji on click */
+.float-emoji {
+  position: fixed; font-size: 1.6rem;
+  pointer-events: none; opacity: 0;
+  animation: floatUp .85s ease-out forwards;
+  z-index: 999;
+}
+@keyframes floatUp {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-70px) scale(1.4); }
+}
+
+/* ── Creature animations ─────────────────── */
+.anim-bounce  { animation: bounce  1.1s ease-in-out infinite; }
+.anim-shake   { animation: shake   .45s ease-in-out infinite; }
+.anim-breathe { animation: breathe 3.2s ease-in-out infinite; }
+
+@keyframes bounce  {
+  0%,100% { transform: translateY(0); }
+  45%     { transform: translateY(-12px); }
+  65%     { transform: translateY(-7px); }
+}
+@keyframes shake   {
+  0%,100% { transform: translateX(0); }
+  25%     { transform: translateX(-5px); }
+  60%     { transform: translateX(5px); }
+  80%     { transform: translateX(-2px); }
+}
+@keyframes breathe {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.07); }
+}
+
+/* Floating ZZZ */
+.zzz { animation: zfloat 2.8s ease-in infinite; opacity:0; }
+.zzz:nth-child(2) { animation-delay: .93s; }
+.zzz:nth-child(3) { animation-delay:1.86s; }
+@keyframes zfloat {
+  0%   { opacity:0; transform:translateY(0) scale(.7); }
+  18%  { opacity:1; }
+  85%  { opacity:.5; }
+  100% { opacity:0; transform:translateY(-40px) scale(1.1); }
+}
+
+/* Sparkles */
+.spark { animation: sparkle 1.5s ease-in-out infinite; opacity:0; }
+.spark:nth-child(2) { animation-delay: .5s; }
+.spark:nth-child(3) { animation-delay: 1s; }
+@keyframes sparkle {
+  0%,100% { opacity:0; transform:scale(.4); }
+  50%     { opacity:1; transform:scale(1); }
+}
+
+/* Sweat drops (hungry) */
+.sweat { animation: sweatDrop 1.2s ease-in infinite; opacity:0; }
+.sweat:nth-child(2) { animation-delay: .6s; }
+@keyframes sweatDrop {
+  0%   { opacity:0; transform:translateY(-4px); }
+  30%  { opacity:.9; }
+  100% { opacity:0; transform:translateY(14px); }
+}
+/* ══ VOICE ════════════════════════════════ */
+.voice-row { display:flex; gap:8px; margin-top:16px; }
+.say-input {
+  flex:1; min-width:0; padding:11px 14px; border-radius:14px;
+  border:1.5px solid var(--border); background:var(--surface); color:#e8eefc;
+  font-family:'Nunito',sans-serif; font-size:.95rem; font-weight:600;
+  outline:none; transition:.18s;
+}
+.say-input:focus { border-color:#818cf8; }
+.say-input::placeholder { color:var(--muted); font-weight:600; }
+.say-btn {
+  padding:11px 18px; border-radius:14px; border:1.5px solid #34d399;
+  background:#34d399; color:#04121a; font-family:'Nunito',sans-serif;
+  font-size:.95rem; font-weight:800; cursor:pointer; white-space:nowrap; transition:.18s;
+}
+.say-btn:hover  { filter:brightness(1.08); }
+.say-btn:active { transform:translateY(1px); }
+.voice-hint {
+  margin-top:8px; font-size:.72rem; color:var(--muted);
+  text-align:center; min-height:1em; line-height:1.4;
+}
+.sound-toggle {
+  background:var(--border); border:none; border-radius:20px; padding:3px 10px;
+  font-size:.8rem; line-height:1.5; cursor:pointer; color:#e8eefc; transition:.18s;
+}
+.sound-toggle:hover { filter:brightness(1.35); }
+.sound-toggle.off   { opacity:.45; }
+.card.speaking .bubble {
+  border-color:#34d399;
+  box-shadow:0 0 0 2px rgba(52,211,153,.35);
+}
+</style>
+</head>
+<body>
+
+<div class="lang-bar" id="langBar"></div>
+
+<div class="card" id="card">
+  <div class="header">
+    <div class="pet-name">Зубрик</div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button class="sound-toggle" id="sound-toggle" onclick="toggleSound()">🔊</button>
+      <div class="coins-badge" id="coins-badge">💰 0</div>
+      <div class="level-badge" id="level-badge">Ур.&nbsp;1</div>
+    </div>
+  </div>
+
+  <div class="bubble" id="bubble">Привет! Я рад тебя видеть! 👋</div>
+
+  <div class="stage">
+
+    <!-- HAPPY ─────────────────────────── -->
+    <div class="creature" id="c-happy">
+      <svg viewBox="-12 -12 104 120" xmlns="http://www.w3.org/2000/svg">
+        <g class="spark"><polygon points="0,-8 2,0 10,0 4,5 6,13 0,8 -6,13 -4,5 -10,0 -2,0"
+          fill="#fde68a" transform="translate(-4,12) scale(.75)"/></g>
+        <g class="spark"><polygon points="0,-8 2,0 10,0 4,5 6,13 0,8 -6,13 -4,5 -10,0 -2,0"
+          fill="#fde68a" transform="translate(82,20) scale(.6)"/></g>
+        <g class="spark"><polygon points="0,-8 2,0 10,0 4,5 6,13 0,8 -6,13 -4,5 -10,0 -2,0"
+          fill="#fde68a" transform="translate(42,-8) scale(.65)"/></g>
+        <!-- ears -->
+        <ellipse cx="14" cy="15" rx="13" ry="15" fill="#059669"/>
+        <ellipse cx="66" cy="15" rx="13" ry="15" fill="#059669"/>
+        <ellipse cx="14" cy="16" rx="8"  ry="9"  fill="#34d399"/>
+        <ellipse cx="66" cy="16" rx="8"  ry="9"  fill="#34d399"/>
+        <!-- body -->
+        <ellipse cx="40" cy="58" rx="34" ry="36" fill="#34d399"/>
+        <!-- blush -->
+        <ellipse cx="17" cy="66" rx="9" ry="5" fill="#f87171" opacity=".4"/>
+        <ellipse cx="63" cy="66" rx="9" ry="5" fill="#f87171" opacity=".4"/>
+        <!-- eyes -->
+        <ellipse cx="27" cy="50" rx="9" ry="10" fill="#064e3b"/>
+        <ellipse cx="53" cy="50" rx="9" ry="10" fill="#064e3b"/>
+        <ellipse cx="25" cy="47" rx="3.5" ry="3.5" fill="#fff"/>
+        <ellipse cx="51" cy="47" rx="3.5" ry="3.5" fill="#fff"/>
+        <!-- smile -->
+        <path d="M22 72 Q40 92 58 72" stroke="#064e3b" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <!-- feet -->
+        <ellipse cx="40" cy="93" rx="20" ry="8" fill="#059669"/>
+      </svg>
+    </div>
+
+    <!-- HUNGRY ─────────────────────────── -->
+    <div class="creature" id="c-hungry">
+      <svg viewBox="-12 -12 110 124" xmlns="http://www.w3.org/2000/svg">
+        <g class="sweat"><ellipse cx="72" cy="20" rx="4" ry="7" fill="#93c5fd"/></g>
+        <g class="sweat"><ellipse cx="79" cy="30" rx="3" ry="5" fill="#93c5fd"/></g>
+        <!-- droopy ears -->
+        <ellipse cx="14" cy="20" rx="11" ry="13" fill="#b45309"/>
+        <ellipse cx="66" cy="20" rx="11" ry="13" fill="#b45309"/>
+        <ellipse cx="14" cy="22" rx="6.5" ry="8"  fill="#fb923c"/>
+        <ellipse cx="66" cy="22" rx="6.5" ry="8"  fill="#fb923c"/>
+        <!-- body pale -->
+        <ellipse cx="40" cy="60" rx="34" ry="35" fill="#fb923c"/>
+        <!-- sad eyes -->
+        <ellipse cx="27" cy="50" rx="8" ry="8" fill="#7c2d12"/>
+        <ellipse cx="53" cy="50" rx="8" ry="8" fill="#7c2d12"/>
+        <!-- wavy pupils -->
+        <path d="M21 48 Q27 43 33 48" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M47 48 Q53 43 59 48" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- tear -->
+        <ellipse cx="20" cy="60" rx="3.5" ry="5" fill="#93c5fd" opacity=".75"/>
+        <!-- open mouth -->
+        <ellipse cx="40" cy="77" rx="13" ry="11" fill="#7c2d12"/>
+        <ellipse cx="40" cy="82" rx="8"  ry="6"  fill="#f87171"/>
+        <ellipse cx="40" cy="86" rx="5"  ry="3.5" fill="#fca5a5"/>
+        <!-- feet -->
+        <ellipse cx="40" cy="93" rx="20" ry="8" fill="#b45309"/>
+      </svg>
+    </div>
+
+    <!-- SLEEP ──────────────────────────── -->
+    <div class="creature" id="c-sleep">
+      <svg viewBox="-12 -12 110 124" xmlns="http://www.w3.org/2000/svg">
+        <text class="zzz" x="60" y="28" font-size="18" fill="#818cf8" font-weight="900" font-family="Nunito,sans-serif">Z</text>
+        <text class="zzz" x="70" y="12" font-size="13" fill="#a5b4fc" font-weight="900" font-family="Nunito,sans-serif">Z</text>
+        <text class="zzz" x="78"  y="1" font-size="10" fill="#c7d2fe" font-weight="900" font-family="Nunito,sans-serif">Z</text>
+        <!-- flat ears -->
+        <ellipse cx="14" cy="22" rx="10" ry="12" fill="#3730a3"/>
+        <ellipse cx="66" cy="22" rx="10" ry="12" fill="#3730a3"/>
+        <ellipse cx="14" cy="24" rx="6"  ry="7"  fill="#818cf8"/>
+        <ellipse cx="66" cy="24" rx="6"  ry="7"  fill="#818cf8"/>
+        <!-- body dark -->
+        <ellipse cx="40" cy="60" rx="34" ry="36" fill="#4f46e5"/>
+        <!-- closed eyes -->
+        <path d="M17 50 Q27 41 37 50" stroke="#1e1b4b" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <path d="M43 50 Q53 41 63 50" stroke="#1e1b4b" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <!-- small mouth -->
+        <path d="M32 73 Q40 78 48 73" stroke="#1e1b4b" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- blanket -->
+        <ellipse cx="40" cy="93" rx="28" ry="9" fill="#3730a3" opacity=".75"/>
+        <ellipse cx="40" cy="94" rx="24" ry="6" fill="#4f46e5"/>
+      </svg>
+    </div>
+
+    <!-- Accessory overlay — same viewBox as creatures -->
+    <svg class="acc-overlay" viewBox="-12 -12 104 120" xmlns="http://www.w3.org/2000/svg">
+      <!-- Crown -->
+      <g id="acc-crown" style="display:none">
+        <polygon points="22,2 27,-8 32,2" fill="#fbbf24"/>
+        <polygon points="32,2 40,-11 48,2" fill="#fbbf24"/>
+        <polygon points="48,2 53,-8 58,2" fill="#fbbf24"/>
+        <rect x="22" y="2" width="36" height="10" rx="2" fill="#f59e0b"/>
+        <circle cx="27" cy="5" r="2.5" fill="#f87171"/>
+        <circle cx="40" cy="4" r="2.5" fill="#34d399"/>
+        <circle cx="53" cy="5" r="2.5" fill="#818cf8"/>
+      </g>
+      <!-- Glasses -->
+      <g id="acc-glasses" style="display:none">
+        <circle cx="27" cy="50" r="11" fill="rgba(244,114,182,.15)" stroke="#f472b6" stroke-width="3"/>
+        <circle cx="53" cy="50" r="11" fill="rgba(244,114,182,.15)" stroke="#f472b6" stroke-width="3"/>
+        <line x1="38" y1="50" x2="42" y2="50" stroke="#f472b6" stroke-width="3"/>
+        <line x1="16" y1="47" x2="16" y2="50" stroke="#f472b6" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="64" y1="47" x2="64" y2="50" stroke="#f472b6" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <!-- Bow -->
+      <g id="acc-bow" style="display:none">
+        <ellipse cx="55" cy="7" rx="11" ry="6" fill="#c084fc" transform="rotate(-25,55,7)"/>
+        <ellipse cx="71" cy="2" rx="11" ry="6" fill="#c084fc" transform="rotate(25,71,2)"/>
+        <circle cx="63" cy="5" r="5" fill="#e879f9"/>
+        <circle cx="63" cy="5" r="2.5" fill="#f0abfc"/>
+      </g>
+    </svg>
+
+  </div>
+
+  <!-- Stat bars -->
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-icon">🍎</span>
+      <span class="stat-label" id="lbl-hunger">Hunger</span>
+      <div class="bar-track"><div class="bar-fill bar-hunger" id="bar-hunger" style="width:75%"></div></div>
+      <span class="stat-val" id="val-hunger">75</span>
+    </div>
+    <div class="stat">
+      <span class="stat-icon">😊</span>
+      <span class="stat-label" id="lbl-mood">Mood</span>
+      <div class="bar-track"><div class="bar-fill bar-mood" id="bar-mood" style="width:65%"></div></div>
+      <span class="stat-val" id="val-mood">65</span>
+    </div>
+    <div class="stat">
+      <span class="stat-icon">⚡</span>
+      <span class="stat-label" id="lbl-energy">Energy</span>
+      <div class="bar-track"><div class="bar-fill bar-energy" id="bar-energy" style="width:60%"></div></div>
+      <span class="stat-val" id="val-energy">60</span>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="buttons">
+    <button class="btn btn-play  active" id="btn-play"  onclick="doAction('play', event)" >🎾 Play</button>
+    <button class="btn btn-feed"         id="btn-feed"  onclick="doAction('feed', event)" >🍎 Feed</button>
+    <button class="btn btn-sleep"        id="btn-sleep" onclick="doAction('sleep', event)">🌙 Sleep</button>
+  </div>
+
+  <!-- Voice: type anything and the pet says it out loud -->
+  <div class="voice-row">
+    <input id="say-input" class="say-input" type="text" maxlength="120"
+           onkeydown="if(event.key==='Enter'||event.keyCode===13){sayIt();}" />
+    <button class="say-btn" id="say-btn" onclick="sayIt()">🔊 Say it</button>
+  </div>
+  <div class="voice-hint" id="voice-hint"></div>
+
+  <!-- Shop -->
+  <button class="shop-toggle" id="shop-toggle-btn" onclick="toggleShop()">🛍️ Accessory Shop</button>
+  <div class="shop-panel" id="shop-panel">
+
+    <div class="shop-item" id="si-crown">
+      <svg class="shop-item-icon" viewBox="0 0 38 30" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="4,28 9,8 19,20 29,8 34,28" fill="#f59e0b"/>
+        <rect x="4" y="22" width="30" height="8" rx="2" fill="#fbbf24"/>
+        <circle cx="9"  cy="26" r="3" fill="#f87171"/>
+        <circle cx="19" cy="25" r="3" fill="#34d399"/>
+        <circle cx="29" cy="26" r="3" fill="#818cf8"/>
+      </svg>
+      <div class="shop-item-info">
+        <div class="shop-item-name" id="name-crown">Crown</div>
+        <div class="shop-item-price" id="price-crown">💰 25 coins</div>
+      </div>
+      <button class="shop-item-btn" id="btn-crown" onclick="shopAction('crown')">Buy</button>
+    </div>
+
+    <div class="shop-item" id="si-glasses">
+      <svg class="shop-item-icon" viewBox="0 0 38 20" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="8" fill="rgba(244,114,182,.2)" stroke="#f472b6" stroke-width="2.5"/>
+        <circle cx="28" cy="10" r="8" fill="rgba(244,114,182,.2)" stroke="#f472b6" stroke-width="2.5"/>
+        <line x1="18" y1="10" x2="20" y2="10" stroke="#f472b6" stroke-width="2.5"/>
+        <line x1="2"  y1="7"  x2="2"  y2="10" stroke="#f472b6" stroke-width="2"/>
+        <line x1="36" y1="7"  x2="36" y2="10" stroke="#f472b6" stroke-width="2"/>
+      </svg>
+      <div class="shop-item-info">
+        <div class="shop-item-name" id="name-glasses">Glasses</div>
+        <div class="shop-item-price" id="price-glasses">💰 20 coins</div>
+      </div>
+      <button class="shop-item-btn" id="btn-glasses" onclick="shopAction('glasses')">Buy</button>
+    </div>
+
+    <div class="shop-item" id="si-bow">
+      <svg class="shop-item-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="10" cy="12" rx="9" ry="6" fill="#c084fc" transform="rotate(-20,10,12)"/>
+        <ellipse cx="28" cy="12" rx="9" ry="6" fill="#c084fc" transform="rotate(20,28,12)"/>
+        <circle cx="19" cy="12" r="5" fill="#e879f9"/>
+        <circle cx="19" cy="12" r="2.5" fill="#f0abfc"/>
+      </svg>
+      <div class="shop-item-info">
+        <div class="shop-item-name" id="name-bow">Bow</div>
+        <div class="shop-item-price" id="price-bow">💰 15 coins</div>
+      </div>
+      <button class="shop-item-btn" id="btn-bow" onclick="shopAction('bow')">Buy</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/*
+  State machine:
+  - visState   = which creature SVG is currently shown ('happy'|'hungry'|'sleep')
+  - lastAction = last button pressed ('play'|'feed'|'sleep')
+
+  Visual state is derived from STATS (not from button directly):
+    if sleeping → sleep
+    if hunger < 25 → hungry (auto, regardless of action)
+    otherwise → happy
+
+  Button effects on stats:
+    play  → mood+15, hunger-10, energy-15
+    feed  → hunger+30, mood+8,  energy+3   → also wakes from auto-hungry state
+    sleep → energy+30, mood-3,  hunger+2   → enters sleep state
+
+  Active button = last action taken (stays active until next action)
+*/
+
+var ACTIONS = {
+  play:  { hunger:-10, mood:+15, energy:-15 },
+  feed:  { hunger:+30, mood:+8,  energy:+3  },
+  sleep: { hunger:+2,  mood:-3,  energy:+30 }
+};
+
+var PHRASES = {
+  EN: {
+    happy:   ["Let's go again! I can do this! 🏃","Best day ever! Wanna play? 🎾","I want to bounce all the way to the stars! ✨","You're my favourite! 🐾","My tail is wagging by itself!"],
+    hungry:  ["My tummy says 'grrr'... 🍕","Looking at you with hungry eyes...","Just one little bite, please! 🥺","I'M SO HUNGRY!! RIGHT NOW!!","Mmm... what's that smell? Give it! 😮"],
+    overfed: ["Oop... tummy's about to pop... 🤢","No more. Please. Stop.","I can't move anymore... 😵","Why are you feeding me so much?! 😤","Hic... hic... *hic* 🫧"],
+    sleep:   ["Zzz... so cozy here... warm... Zzz","Don't wake me... I'm almost on another planet...","Dreaming of a ball... Zzz 💤","Just five more minutes... Zzz","Sleep is the best friend... Zzz 💤"]
+  },
+  RU: {
+    happy:   ['Побежали ещё раз! Я могу! 🏃','Это лучший день! Играем? 🎾','Хочу прыгать до звёзд! ✨','Ты мой самый лучший! 🐾','Хвостик сам крутится от радости!'],
+    hungry:  ['Живот говорит «бурр-р-р»... 🍕','Смотрю голодными глазами...','Дай хоть кусочек, пожалуйста! 🥺','Есть хочу!! Очень!! Срочно!!','Ммм... чем пахнет? Дай мне! 😮'],
+    overfed: ['Уп-с... живот лопается... 🤢','Больше не надо. Пожалуйста. Стоп.','Я больше не могу двигаться... 😵','Зачем ты меня так кормишь?! 😤','Икаю... икаю... *ик* 🫧'],
+    sleep:   ['Zzz... хорошо тут... тепло... Zzz','Не буди... я почти на другой планете...','Снится мячик... Zzz 💤','Только ещё пять минут... Zzz','Сон — лучший друг... Zzz 💤']
+  },
+  ES: {
+    happy:   ['¡Vamos de nuevo! ¡Puedo hacerlo! 🏃','¡El mejor día! ¿Jugamos? 🎾','¡Quiero saltar hasta las estrellas! ✨','¡Eres mi favorito! 🐾','¡Mi cola se mueve sola de alegría!'],
+    hungry:  ['Mi barriga dice «grrr»... 🍕','Te miro con ojos hambrientos...','¡Solo un bocadito, por favor! 🥺','¡TENGO MUCHA HAMBRE!! ¡AHORA!!','Mmm... ¿qué huele tan bien? ¡Dámelo! 😮'],
+    overfed: ['Ups... la barriga va a explotar... 🤢','Ya no más. Por favor. Para.','Ya no puedo moverme... 😵','¿Por qué me das tanto de comer?! 😤','Hip... hip... *hip* 🫧'],
+    sleep:   ['Zzz... qué acogedor... calientito... Zzz','No me despiertes... casi en otro planeta...','Soñando con una pelota... Zzz 💤','Cinco minutos más... Zzz','El sueño es el mejor amigo... Zzz 💤']
+  },
+  ID: {
+    happy:   ['Ayo lagi! Aku bisa! 🏃','Hari terbaik! Mau main? 🎾','Mau melompat sampai bintang! ✨','Kamu yang terbaik! 🐾','Ekorku bergerak sendiri!'],
+    hungry:  ['Perutku bilang "grrr"... 🍕','Melirikmu dengan mata lapar...','Sedikit saja, tolong! 🥺','LAPAR SEKALI!! SEKARANG!!','Hmm... bau apa itu? Beri aku! 😮'],
+    overfed: ['Aduh... perut mau meletus... 🤢','Tidak lagi. Tolong. Berhenti.','Aku tidak bisa bergerak... 😵','Kenapa dikasih makan sebanyak itu?! 😤','Hik... hik... *hik* 🫧'],
+    sleep:   ['Zzz... nyaman sekali... hangat... Zzz','Jangan bangunkan... hampir ke planet lain...','Mimpi bola... Zzz 💤','Lima menit lagi... Zzz','Tidur adalah sahabat terbaik... Zzz 💤']
+  },
+  IT: {
+    happy:   ['Andiamo ancora! Ce la faccio! 🏃','Il giorno migliore! Giochiamo? 🎾','Voglio saltare fino alle stelle! ✨','Sei il mio preferito! 🐾','La coda si muove da sola!'],
+    hungry:  ['La mia pancia dice "grrr"... 🍕','Ti guardo con occhi affamati...','Solo un morso, per favore! 🥺','HO TANTISSIMA FAME!! ADESSO!!','Mmm... cosa profuma così bene? Dammelo! 😮'],
+    overfed: ['Ops... la pancia sta per scoppiare... 🤢','Basta. Per favore. Stop.','Non riesco più a muovermi... 😵','Perché mi dai da mangiare così tanto?! 😤','Singhiozzo... singhiozzo... 🫧'],
+    sleep:   ['Zzz... che accogliente... caldo... Zzz','Non svegliarmi... sono quasi su un altro pianeta...','Sogno una palla... Zzz 💤','Ancora cinque minuti... Zzz','Il sonno è il migliore amico... Zzz 💤']
+  },
+  TR: {
+    happy:   ['Hadi tekrar! Yapabilirim! 🏃','En güzel gün! Oynayalım mı? 🎾','Yıldızlara kadar zıplamak istiyorum! ✨','Sen benim favorimsin! 🐾','Kuyruğum kendiliğinden sallıyor!'],
+    hungry:  ['Karnım "grrr" diyor... 🍕','Seni aç gözlerle izliyorum...','Sadece bir ısırık, lütfen! 🥺','ÇOK AÇIM!! HEMEN!!','Mmm... ne kokuyor? Ver bana! 😮'],
+    overfed: ['Yavaş... karnım patlıyor... 🤢','Artık yok. Lütfen. Dur.','Artık hareket edemiyorum... 😵','Neden bu kadar çok besliyorsun beni?! 😤','Hıç... hıç... *hıç* 🫧'],
+    sleep:   ['Zzz... burası çok rahat... sıcak... Zzz','Uyandırma... neredeyse başka bir gezegende...','Top rüyası görüyorum... Zzz 💤','Sadece beş dakika daha... Zzz','Uyku en iyi arkadaş... Zzz 💤']
+  },
+  PL: {
+    happy:   ['Jeszcze raz! Dam radę! 🏃','Najlepszy dzień! Gramy? 🎾','Chcę skakać aż do gwiazd! ✨','Jesteś moim ulubionym! 🐾','Ogonek kręci się sam z radości!'],
+    hungry:  ['Brzuszek mówi "grrr"... 🍕','Patrzę na ciebie głodnymi oczami...','Tylko jeden kęsek, proszę! 🥺','JESTEM GŁODNY!! TERAZ!!','Mmm... co tak pachnie? Daj mi! 😮'],
+    overfed: ['Oj... brzuszek zaraz pęknie... 🤢','Już nie. Proszę. Stop.','Nie mogę się ruszyć... 😵','Dlaczego mnie tak karmisz?! 😤','Czkawka... czkawka... *czkawka* 🫧'],
+    sleep:   ['Zzz... tak przytulnie... ciepło... Zzz','Nie budź mnie... prawie na innej planecie...','Śnię o piłce... Zzz 💤','Jeszcze pięć minut... Zzz','Sen to najlepszy przyjaciel... Zzz 💤']
+  },
+  PT: {
+    happy:   ['Vamos de novo! Consigo! 🏃','O melhor dia! Vamos jogar? 🎾','Quero saltar até às estrelas! ✨','És o meu favorito! 🐾','O meu rabo abana sozinho!'],
+    hungry:  ['A minha barriga diz "grrr"... 🍕','Olho para ti com olhos famintos...','Só um bocadinho, por favor! 🥺','TENHO MUITA FOME!! AGORA!!','Mmm... o que cheira tão bem? Dá-me! 😮'],
+    overfed: ['Ops... a barriga vai rebentar... 🤢','Chega. Por favor. Para.','Já não me consigo mexer... 😵','Porquê me dás tanto de comer?! 😤','Soluço... soluço... *soluço* 🫧'],
+    sleep:   ['Zzz... tão aconchegante... quente... Zzz','Não me acorde... estou quase noutro planeta...','A sonhar com uma bola... Zzz 💤','Mais cinco minutinhos... Zzz','O sono é o melhor amigo... Zzz 💤']
+  },
+  AR: {
+    happy:   ['هيا مجدداً! أستطيع! 🏃','أفضل يوم! نلعب؟ 🎾','أريد القفز حتى النجوم! ✨','أنت المفضل لديّ! 🐾','ذيلي يتحرك وحده من الفرح!'],
+    hungry:  ['بطني تقول «غررر»... 🍕','أنظر إليك بعيون جائعة...','فقط قضمة صغيرة، أرجوك! 🥺','أنا جائع جداً!! الآن!!','ممم... ما هذه الرائحة؟ أعطني! 😮'],
+    overfed: ['أوه... البطن على وشك الانفجار... 🤢','لا مزيد. من فضلك. توقف.','لا أستطيع التحرك... 😵','لماذا تطعمني كثيراً جداً؟! 😤','فواق... فواق... *فواق* 🫧'],
+    sleep:   ['zzz... ما أجمل هذا... دافئ... zzz','لا توقظني... أنا تقريباً في كوكب آخر...','أحلم بكرة... zzz 💤','خمس دقائق أخرى... zzz','النوم أفضل صديق... zzz 💤']
+  }
+};
+
+var LANG_ORDER = ['EN','RU','ES','ID','IT','TR','PL','PT','AR'];
+
+var TRANS = {
+  EN: { dir:'ltr',
+    statLabels:  { hunger:'Hunger',  mood:'Mood',     energy:'Energy'  },
+    actionBtns:  { play:'🎾 Play',   feed:'🍎 Feed',  sleep:'🌙 Sleep' },
+    levelPrefix: 'Lv.', shopToggle:'🛍️ Accessory Shop',
+    shopNames:   { crown:'Crown',    glasses:'Glasses',  bow:'Bow'     },
+    coinWord:'coins', buy:'Buy', wear:'Wear', remove:'Remove ✓', owned:'Owned', equipped:'On'
+  },
+  RU: { dir:'ltr',
+    statLabels:  { hunger:'Сытость', mood:'Радость',  energy:'Энергия' },
+    actionBtns:  { play:'🎾 Играть', feed:'🍎 Кормить', sleep:'🌙 Спать' },
+    levelPrefix: 'Ур.', shopToggle:'🛍️ Магазин аксессуаров',
+    shopNames:   { crown:'Корона',   glasses:'Очки',    bow:'Бантик'   },
+    coinWord:'монет', buy:'Купить', wear:'Надеть', remove:'Снять ✓', owned:'Куплено', equipped:'Надето'
+  },
+  ES: { dir:'ltr',
+    statLabels:  { hunger:'Hambre',  mood:'Humor',    energy:'Energía' },
+    actionBtns:  { play:'🎾 Jugar',  feed:'🍎 Alimentar', sleep:'🌙 Dormir' },
+    levelPrefix: 'Nv.', shopToggle:'🛍️ Tienda de Accesorios',
+    shopNames:   { crown:'Corona',   glasses:'Gafas',   bow:'Lazo'     },
+    coinWord:'monedas', buy:'Comprar', wear:'Usar', remove:'Quitar ✓', owned:'Tenido', equipped:'Puesto'
+  },
+  ID: { dir:'ltr',
+    statLabels:  { hunger:'Lapar',   mood:'Suasana',  energy:'Energi'  },
+    actionBtns:  { play:'🎾 Bermain', feed:'🍎 Makan', sleep:'🌙 Tidur' },
+    levelPrefix: 'Lv.', shopToggle:'🛍️ Toko Aksesori',
+    shopNames:   { crown:'Mahkota',  glasses:'Kacamata', bow:'Pita'    },
+    coinWord:'koin', buy:'Beli', wear:'Pakai', remove:'Lepas ✓', owned:'Dimiliki', equipped:'Dipakai'
+  },
+  IT: { dir:'ltr',
+    statLabels:  { hunger:'Fame',    mood:'Umore',    energy:'Energia' },
+    actionBtns:  { play:'🎾 Giocare', feed:'🍎 Nutrire', sleep:'🌙 Dormire' },
+    levelPrefix: 'Lv.', shopToggle:'🛍️ Negozio Accessori',
+    shopNames:   { crown:'Corona',   glasses:'Occhiali', bow:'Fiocco'  },
+    coinWord:'monete', buy:'Compra', wear:'Indossa', remove:'Rimuovi ✓', owned:'Acquistato', equipped:'Indossato'
+  },
+  TR: { dir:'ltr',
+    statLabels:  { hunger:'Açlık',   mood:'Mutluluk', energy:'Enerji'  },
+    actionBtns:  { play:'🎾 Oyna',   feed:'🍎 Besle', sleep:'🌙 Uyu'   },
+    levelPrefix: 'Sv.', shopToggle:'🛍️ Aksesuar Dükkanı',
+    shopNames:   { crown:'Taç',      glasses:'Gözlük',  bow:'Kurdele'  },
+    coinWord:'altın', buy:'Satın Al', wear:'Giy', remove:'Çıkar ✓', owned:'Alındı', equipped:'Giyili'
+  },
+  PL: { dir:'ltr',
+    statLabels:  { hunger:'Głód',    mood:'Nastrój',  energy:'Energia' },
+    actionBtns:  { play:'🎾 Graj',   feed:'🍎 Nakarm', sleep:'🌙 Śpij' },
+    levelPrefix: 'Poz.', shopToggle:'🛍️ Sklep Akcesoriów',
+    shopNames:   { crown:'Korona',   glasses:'Okulary', bow:'Kokarda'  },
+    coinWord:'monet', buy:'Kup', wear:'Załóż', remove:'Zdejmij ✓', owned:'Kupione', equipped:'Założone'
+  },
+  PT: { dir:'ltr',
+    statLabels:  { hunger:'Fome',    mood:'Humor',    energy:'Energia' },
+    actionBtns:  { play:'🎾 Jogar',  feed:'🍎 Alimentar', sleep:'🌙 Dormir' },
+    levelPrefix: 'Nv.', shopToggle:'🛍️ Loja de Acessórios',
+    shopNames:   { crown:'Coroa',    glasses:'Óculos',  bow:'Laço'     },
+    coinWord:'moedas', buy:'Comprar', wear:'Usar', remove:'Remover ✓', owned:'Comprado', equipped:'Usando'
+  },
+  AR: { dir:'rtl',
+    statLabels:  { hunger:'جوع',     mood:'مزاج',     energy:'طاقة'   },
+    actionBtns:  { play:'🎾 العب',   feed:'🍎 أطعم',  sleep:'🌙 نم'   },
+    levelPrefix: 'مس.', shopToggle:'🛍️ متجر الإكسسوارات',
+    shopNames:   { crown:'تاج',      glasses:'نظارات', bow:'ربطة'     },
+    coinWord:'عملة', buy:'اشترِ', wear:'ارتدِ', remove:'اخلع ✓', owned:'مشتري', equipped:'مرتدى'
+  }
+};
+
+var FLOATS = { play:'🎾', feed:'🍎', sleep:'😴' };
+
+var SHOP = {
+  crown:   { cost:25, label:'Корона' },
+  glasses: { cost:20, label:'Очки'   },
+  bow:     { cost:15, label:'Бантик' }
+};
+
+var ANIMS = { happy:'anim-bounce', hungry:'anim-shake', sleep:'anim-breathe' };
+
+var lang      = 'EN';
+var stats     = { hunger:75, mood:65, energy:60 };
+var visState  = 'happy';
+var sleeping  = false;
+var lastBtn   = 'play';
+var xp        = 0;
+var level     = 1;
+var phraseIdx = {};
+var coins     = 0;
+var owned     = { crown:false, glasses:false, bow:false };
+var equipped  = { crown:false, glasses:false, bow:false };
+
+function T() { return TRANS[lang]; }
+
+/* ══ VOICE ENGINE — Web Speech API ═════════════════════
+   Browser text-to-speech. No API key, no external service.
+   Speaks ONLY on a real user action (action button / "Say it"),
+   never on load and never from the auto-decay timer.
+   ════════════════════════════════════════════════ */
+
+var VOICE_LANG = {
+  EN:'en-US', RU:'ru-RU', ES:'es-ES', ID:'id-ID', IT:'it-IT',
+  TR:'tr-TR', PL:'pl-PL', PT:'pt-BR', AR:'ar-SA'
+};
+
+var VOICE_T = {
+  EN:{ btn:'🔊 Say it',     ph:'Type anything…',
+       no:'No English voice on this device — using the default one.',
+       unsup:'This browser cannot speak.' },
+  RU:{ btn:'🔊 Скажи это', ph:'Напиши что угодно…',
+       no:'Русского голоса тут нет — говорю голосом по умолчанию.',
+       unsup:'Этот браузер не умеет говорить.' },
+  ES:{ btn:'🔊 Dilo',       ph:'Escribe lo que quieras…',
+       no:'No hay voz en español — uso la predeterminada.',
+       unsup:'Este navegador no puede hablar.' },
+  ID:{ btn:'🔊 Ucapkan',    ph:'Ketik apa saja…',
+       no:'Tidak ada suara Indonesia — memakai suara bawaan.',
+       unsup:'Peramban ini tidak bisa berbicara.' },
+  IT:{ btn:'🔊 Dillo',      ph:'Scrivi qualcosa…',
+       no:'Nessuna voce italiana — uso quella predefinita.',
+       unsup:'Questo browser non può parlare.' },
+  TR:{ btn:'🔊 Söyle',      ph:'Bir şeyler yaz…',
+       no:'Türkçe ses yok — varsayılan ses kullanılıyor.',
+       unsup:'Bu tarayıcı konuşamiyor.' },
+  PL:{ btn:'🔊 Powiedz to', ph:'Napisz cokolwiek…',
+       no:'Brak polskiego głosu — używam domyślnego.',
+       unsup:'Ta przeglądarka nie mówi.' },
+  PT:{ btn:'🔊 Diga isso',  ph:'Escreva qualquer coisa…',
+       no:'Sem voz em português — usando a padrão.',
+       unsup:'Este navegador não fala.' },
+  AR:{ btn:'🔊 قل ذلك',     ph:'اكتب أي شيء…',
+       no:'لا يوجد صوت عربي — سأستخدم الصوت الافتراضي.',
+       unsup:'هذا المتصفح لا يستطيع التحدث.' }
+};
+
+var soundOn     = true;
+var voicesCache = [];
+
+function ttsSupported() {
+  return typeof window.speechSynthesis !== 'undefined'
+      && typeof window.SpeechSynthesisUtterance !== 'undefined';
+}
+
+function loadVoices() {
+  try { voicesCache = window.speechSynthesis.getVoices() || []; }
+  catch (e) { voicesCache = []; }
+}
+
+/* Exact locale first (ru-RU), then any voice of the same language
+   (ru-*), then null -> let the engine pick its default. */
+function pickVoice(bcp) {
+  if (!voicesCache.length) loadVoices();
+  var want = bcp.toLowerCase(), base = want.split('-')[0];
+  var exact = null, loose = null;
+  for (var i = 0; i < voicesCache.length; i++) {
+    var vl = (voicesCache[i].lang || '').replace('_', '-').toLowerCase();
+    if (vl === want) { exact = voicesCache[i]; break; }
+    if (!loose && vl.split('-')[0] === base) loose = voicesCache[i];
+  }
+  return exact || loose;
+}
+
+/* Phrases carry emoji; a speech engine reads them out as words. */
+function stripEmoji(s) {
+  return String(s)
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE00}-\u{FE0F}\u{1F1E6}-\u{1F1FF}]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function speak(text) {
+  if (!soundOn || !ttsSupported()) return;
+  var clean = stripEmoji(text);
+  if (!clean) return;
+  try {
+    window.speechSynthesis.cancel();
+    var bcp = VOICE_LANG[lang] || 'en-US';
+    var u   = new SpeechSynthesisUtterance(clean);
+    u.lang  = bcp;
+    var v   = pickVoice(bcp);
+    if (v) u.voice = v;
+    u.rate  = 0.95;
+    u.pitch = 1.15;
+    var card = document.getElementById('card');
+    u.onstart = function () { card.classList.add('speaking'); };
+    u.onend   = function () { card.classList.remove('speaking'); };
+    u.onerror = function () { card.classList.remove('speaking'); };
+    window.speechSynthesis.speak(u);
+  } catch (e) { /* never break the page over sound */ }
+}
+
+/* "Say it" — the pet repeats whatever was typed. */
+function sayIt() {
+  var inp = document.getElementById('say-input');
+  var txt = (inp.value || '').trim();
+  if (!txt) { inp.focus(); return; }
+  document.getElementById('bubble').textContent = txt;
+  speak(txt);
+}
+
+function toggleSound() {
+  soundOn = !soundOn;
+  if (!soundOn) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+  renderVoiceUI();
+}
+
+function renderVoiceUI() {
+  var t = VOICE_T[lang] || VOICE_T.EN;
+  document.getElementById('say-btn').textContent   = t.btn;
+  document.getElementById('say-input').placeholder = t.ph;
+  var st = document.getElementById('sound-toggle');
+  st.textContent = soundOn ? '🔊' : '🔇';
+  st.classList.toggle('off', !soundOn);
+  var hint = document.getElementById('voice-hint');
+  if (!ttsSupported())                              hint.textContent = t.unsup;
+  else if (!pickVoice(VOICE_LANG[lang] || 'en-US')) hint.textContent = t.no;
+  else                                              hint.textContent = '';
+}
+
+if (ttsSupported()) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = function () {
+    loadVoices();
+    renderVoiceUI();
+  };
+}
+
+function clamp(v){ return Math.max(0, Math.min(100, v)); }
+
+/* ── Derive visual state from stats ──────── */
+function computeVisState() {
+  if (sleeping)           return 'sleep';
+  if (stats.hunger < 40)  return 'hungry';  // too hungry
+  if (stats.hunger >= 85) return 'hungry';  // overfed
+  return 'happy';
+}
+
+/* ── Detect overfed vs underfed ─────────── */
+function hungerContext() {
+  if (stats.hunger >= 85) return 'overfed';
+  if (stats.hunger < 40)  return 'starving';
+  return 'ok';
+}
+
+/* ── Switch displayed creature ───────────── */
+function switchCreature(newVis) {
+  if (newVis === visState) return;
+  // remove old
+  var old = document.getElementById('c-' + visState);
+  old.classList.remove('visible');
+  old.classList.remove(ANIMS[visState]);
+  // add new
+  visState = newVis;
+  var neo = document.getElementById('c-' + visState);
+  neo.classList.add('visible');
+  neo.classList.add(ANIMS[visState]);
+}
+
+/* ── Update stat bars ────────────────────── */
+function renderStats() {
+  var keys = ['hunger', 'mood', 'energy'];
+  for (var i = 0; i < keys.length; i++) {
+    var k   = keys[i];
+    var v   = Math.round(stats[k]);
+    var bar = document.getElementById('bar-' + k);
+    var val = document.getElementById('val-' + k);
+    bar.style.width = v + '%';
+    val.textContent = v;
+    if (k === 'hunger') {
+      bar.classList.toggle('low',  v < 40);
+      bar.classList.toggle('high', v >= 85);
+    } else {
+      bar.classList.toggle('low', v < 40);
+      bar.classList.remove('high');
+    }
+  }
+}
+
+/* ── Speech bubble ───────────────────────── */
+function say(stateKey, aloud) {
+  var phraseKey = (stateKey === 'hungry' && hungerContext() === 'overfed')
+    ? 'overfed' : stateKey;
+  var key = lang + '_' + phraseKey;
+  if (!phraseIdx[key]) phraseIdx[key] = 0;
+  var list = PHRASES[lang][phraseKey];
+  var idx  = phraseIdx[key] % list.length;
+  phraseIdx[key]++;
+  document.getElementById('bubble').textContent = list[idx];
+  if (aloud) speak(list[idx]);   // only behind a real button press
+}
+
+/* ── Coins ───────────────────────────────── */
+function addCoins(n) {
+  coins += n;
+  document.getElementById('coins-badge').textContent = '💰 ' + coins;
+  renderShop();
+}
+
+/* ── Shop ────────────────────────────────── */
+function toggleShop() {
+  var panel = document.getElementById('shop-panel');
+  panel.classList.toggle('open');
+}
+
+function renderShop() {
+  var t   = T();
+  var ids = ['crown','glasses','bow'];
+  for (var i = 0; i < ids.length; i++) {
+    var id  = ids[i];
+    var btn = document.getElementById('btn-' + id);
+    var si  = document.getElementById('si-' + id);
+    var pr  = document.getElementById('price-' + id);
+    document.getElementById('name-' + id).textContent = t.shopNames[id];
+    if (!owned[id]) {
+      btn.textContent = t.buy;
+      btn.className   = 'shop-item-btn';
+      btn.disabled    = coins < SHOP[id].cost;
+      pr.textContent  = '💰 ' + SHOP[id].cost + ' ' + t.coinWord;
+      pr.className    = 'shop-item-price';
+      si.classList.remove('owned','equipped');
+    } else if (!equipped[id]) {
+      btn.textContent = t.wear;
+      btn.className   = 'shop-item-btn equip-btn';
+      btn.disabled    = false;
+      pr.textContent  = t.owned;
+      pr.className    = 'shop-item-price owned-label';
+      si.classList.add('owned');
+      si.classList.remove('equipped');
+    } else {
+      btn.textContent = t.remove;
+      btn.className   = 'shop-item-btn equipped-btn';
+      btn.disabled    = false;
+      pr.textContent  = t.equipped;
+      pr.className    = 'shop-item-price owned-label';
+      si.classList.add('owned','equipped');
+    }
+  }
+  document.getElementById('shop-toggle-btn').textContent = t.shopToggle;
+}
+
+function shopAction(id) {
+  if (!owned[id]) {
+    if (coins < SHOP[id].cost) return;
+    coins -= SHOP[id].cost;
+    owned[id]    = true;
+    equipped[id] = true;
+    document.getElementById('coins-badge').textContent = '💰 ' + coins;
+    floatEmoji('✨', document.getElementById('btn-' + id));
+  } else {
+    equipped[id] = !equipped[id];
+  }
+  document.getElementById('acc-' + id).style.display = equipped[id] ? '' : 'none';
+  renderShop();
+}
+
+/* ── Level ───────────────────────────────── */
+function addXP(n) {
+  xp += n;
+  var lv = Math.floor(xp / 50) + 1;
+  if (lv > level) {
+    level = lv;
+    document.getElementById('level-badge').textContent = T().levelPrefix + ' ' + level;
+  }
+}
+
+/* ── Language switch ─────────────────────── */
+function setLang(l) {
+  lang = l;
+  var t = T();
+  // lang bar — re-render with active highlight
+  document.getElementById('langBar').innerHTML = LANG_ORDER.map(function(code) {
+    return '<button class="lb' + (code === l ? ' on' : '') + '" onclick="setLang(\'' + code + '\')">' + code + '</button>';
+  }).join('');
+  // RTL for Arabic
+  document.getElementById('card').setAttribute('dir', t.dir || 'ltr');
+  // stat labels
+  document.getElementById('lbl-hunger').textContent = t.statLabels.hunger;
+  document.getElementById('lbl-mood').textContent   = t.statLabels.mood;
+  document.getElementById('lbl-energy').textContent = t.statLabels.energy;
+  // action buttons
+  document.getElementById('btn-play').textContent  = t.actionBtns.play;
+  document.getElementById('btn-feed').textContent  = t.actionBtns.feed;
+  document.getElementById('btn-sleep').textContent = t.actionBtns.sleep;
+  // level badge
+  document.getElementById('level-badge').textContent = t.levelPrefix + ' ' + level;
+  // shop
+  renderShop();
+  // voice button label, placeholder, "no voice for this language" hint
+  renderVoiceUI();
+  // re-say current phrase in new language (silent: no click behind it)
+  say(visState);
+}
+
+/* ── Ripple on button ────────────────────── */
+function ripple(btn, e) {
+  var r    = btn.getBoundingClientRect();
+  var size = Math.max(r.width, r.height);
+  var el   = document.createElement('div');
+  el.className = 'ripple';
+  el.style.cssText = 'width:' + size + 'px;height:' + size + 'px;'
+    + 'left:' + (e.clientX - r.left - size/2) + 'px;'
+    + 'top:'  + (e.clientY - r.top  - size/2) + 'px;';
+  btn.appendChild(el);
+  setTimeout(function(){ el.remove(); }, 600);
+}
+
+/* ── Floating emoji ──────────────────────── */
+function floatEmoji(emoji, btn) {
+  var r  = btn.getBoundingClientRect();
+  var el = document.createElement('div');
+  el.className = 'float-emoji';
+  el.textContent = emoji;
+  el.style.left = (r.left + r.width/2 - 14) + 'px';
+  el.style.top  = r.top + 'px';
+  document.body.appendChild(el);
+  setTimeout(function(){ el.remove(); }, 900);
+}
+
+/* ── Set active button highlight ─────────── */
+function setActiveBtn(action) {
+  var btns = ['play','feed','sleep'];
+  for (var i = 0; i < btns.length; i++) {
+    document.getElementById('btn-' + btns[i]).classList.toggle('active', btns[i] === action);
+  }
+  lastBtn = action;
+}
+
+/* ── Main action handler ─────────────────── */
+function doAction(action, e) {
+  ripple(e.currentTarget, e);
+  floatEmoji(FLOATS[action], e.currentTarget);
+
+  // Apply stat effects
+  var d = ACTIONS[action];
+  stats.hunger = clamp(stats.hunger + d.hunger);
+  stats.mood   = clamp(stats.mood   + d.mood);
+  stats.energy = clamp(stats.energy + d.energy);
+
+  // Update sleep flag
+  if (action === 'sleep') {
+    sleeping = true;
+  } else {
+    // Any non-sleep action wakes the pet
+    sleeping = false;
+  }
+
+  renderStats();
+  setActiveBtn(action);
+  addXP(10);
+  addCoins(5);
+
+  // Derive and switch visual state
+  var newVis = computeVisState();
+  switchCreature(newVis);
+  say(newVis, true);
+}
+
+/* ── Auto-decay every 8 seconds ─────────── */
+setInterval(function() {
+  if (!sleeping) {
+    stats.hunger = clamp(stats.hunger - 3);
+    stats.mood   = clamp(stats.mood   - 1.5);
+    renderStats();
+  } else {
+    // While sleeping: energy restores
+    stats.energy = clamp(stats.energy + 5);
+    renderStats();
+    // Auto-wake when energy full
+    if (stats.energy >= 100) {
+      sleeping = false;
+      var newVis = computeVisState();
+      switchCreature(newVis);
+      say(newVis);
+    }
+  }
+
+  // Re-derive visual state (hunger might have dropped)
+  var newVis = computeVisState();
+  if (newVis !== visState) {
+    switchCreature(newVis);
+    say(newVis);
+  }
+}, 8000);
+
+/* ── Init ────────────────────────────────── */
+(function init() {
+  var startVis = computeVisState();
+  var el = document.getElementById('c-' + startVis);
+  el.classList.add('visible');
+  el.classList.add(ANIMS[startVis]);
+  visState = startVis;
+  setActiveBtn('play');
+  renderStats();
+  setLang('EN');
+})();
+</script>
+</body>
+</html>
